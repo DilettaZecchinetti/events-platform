@@ -1,17 +1,26 @@
+import dotenv from "dotenv";
+const result = dotenv.config();
+if (result.error) {
+  console.error("Error loading .env file:", result.error);
+} else {
+  console.log("Environment variables loaded successfully");
+}
+
+import { PORT } from "./config.js";
+import authRoutes from "./routes/auth.js";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+
 import eventsRouter from "./routes/events.js";
 import signupsRoutes from "./routes/signups.js";
-import authRoutes from "./routes/auth.js";
+
 import { google } from "googleapis";
 import path from "path";
 import session from "express-session";
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(express.json());
+// const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -37,7 +46,6 @@ const oauth2Client = new google.auth.OAuth2(
 
 const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
-// Google OAuth Route: Step 1 - Redirect to Google login
 app.get("/auth/google", (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
@@ -95,11 +103,16 @@ app.post("/add-to-calendar", async (req, res) => {
   }
 });
 
-// Simple route to confirm server is running
 app.get("/", (req, res) => {
   res.send("Events Platform Backend is running...");
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+//middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Internal server error" });
 });
