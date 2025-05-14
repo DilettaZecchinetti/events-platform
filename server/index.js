@@ -60,16 +60,37 @@ app.get("/auth/google", (req, res) => {
   res.redirect(authUrl);
 });
 
+// google callback route
 app.get("/auth/google/callback", async (req, res) => {
   const code = req.query.code;
   try {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
-    req.session.tokens = tokens;
-    res.redirect("/");
-  } catch (error) {
-    console.error("Error during Google OAuth callback:", error);
-    res.status(500).send("Error during authentication");
+
+    const oauth2 = google.oauth2({ auth: oauth2Client, version: "v2" });
+    const { data: profile } = await oauth2.userinfo.get();
+
+    let user = await User.findOne({ googleId: profile.id });
+
+    if (user) {
+      req.session.user = {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      };
+      return res.redirect(process.env.FRONTEND_URL);
+    }
+
+    req.session.tempUser = {
+      googleId: profile.id,
+      email: profile.email,
+      name: profile.name,
+    };
+
+    res.redirect(`${process.env.FRONTEND_URL}/select-role`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Authentication error");
   }
 });
 
@@ -111,6 +132,31 @@ app.post("/add-to-calendar", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.send("Events Platform Backend is running...");
+});
+
+app.post("/api/set-role", express.json(), async (req, res) => {
+  const { role } = req.body;
+  const temp = req.session.tempUser;
+
+  if (!temp || !["user", "staff"].includes(role)) {
+    return res.status(400).json({ error: "Invalid role or session expired" });
+  }
+
+  const newUser = await User.create({
+    googleId: temp.googleId,
+    email: temp.email,
+    name: temp.name,
+    role,
+  });
+
+  req.session.user = {
+    id: newUser._id,
+    email: newUser.email,
+    role: newUser.role,
+  };
+
+  delete req.session.tempUser;
+  res.status(201).json({ message: "Role set and user created" });
 });
 
 app.listen(PORT, () => {

@@ -5,23 +5,42 @@ import User from "../models/user.js";
 
 // const JWT_SECRET = process.env.JWT_SECRET;
 
-export const signup = async (req, res) => {
-  const { email, password } = req.body;
+const bcrypt = require("bcrypt");
 
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ error: "User already exists." });
+app.post(
+  "/signup",
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    const { name, email, password, role } = req.body;
+    if (!["user", "staff"].includes(role))
+      return res.status(400).send("Invalid role");
 
-    const newUser = new User({ email, password });
-    await newUser.save();
+    try {
+      const existing = await User.findOne({ email });
+      if (existing) return res.status(400).send("Email already exists");
 
-    res.status(201).json({ message: "User created successfully." });
-  } catch (err) {
-    console.error("Signup error:", err);
-    res.status(500).json({ error: "Internal server error" });
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      });
+
+      req.session.user = {
+        id: newUser._id,
+        email: newUser.email,
+        role: newUser.role,
+      };
+
+      res.redirect("/");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Signup failed");
+    }
   }
-};
+);
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
