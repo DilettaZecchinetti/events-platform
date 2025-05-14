@@ -1,10 +1,16 @@
 import dotenv from "dotenv";
 const result = dotenv.config();
-if (result.error) {
-  console.error("Error loading .env file:", result.error);
-} else {
-  console.log("Environment variables loaded successfully");
-}
+import connectDB from "./config/db.js";
+
+connectDB();
+
+// ...rest of your server setup code
+
+// if (result.error) {
+//   console.error("Error loading .env file:", result.error);
+// } else {
+//   console.log("Environment variables loaded successfully");
+// }
 
 import { PORT } from "./config.js";
 import authRoutes from "./routes/auth.js";
