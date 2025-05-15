@@ -13,6 +13,10 @@ const generateToken = (user) => {
 };
 
 export const registerUser = async (req, res) => {
+  if (!["user", "staff"].includes(role)) {
+    return res.status(400).json({ msg: "Invalid role" });
+  }
+
   const { name, email, password, role } = req.body;
   try {
     const existing = await User.findOne({ email });
@@ -53,6 +57,7 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
+//signup and login with google
 export const googleAuth = async (req, res) => {
   const { token } = req.body;
 
