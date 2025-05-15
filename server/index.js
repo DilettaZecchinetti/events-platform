@@ -16,6 +16,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Events platform API is running!");
+});
 app.use("/api/events", eventsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/staff/events", staffRouter);

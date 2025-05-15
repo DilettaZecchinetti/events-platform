@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import axios from "axios";
 
 const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
