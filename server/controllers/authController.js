@@ -3,9 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 
-// const JWT_SECRET = process.env.JWT_SECRET;
-
-// const bcrypt = require("bcrypt");
+import { OAuth2Client } from "google-auth-library";
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
@@ -24,6 +23,7 @@ export const registerUser = async (req, res) => {
     const token = generateToken(user);
     res.status(201).json({ token, user });
   } catch (err) {
+    console.error("Error during user registration:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
@@ -50,5 +50,30 @@ export const getCurrentUser = async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const googleAuth = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const { sub: googleId, email, name } = ticket.getPayload();
+
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      user = await User.create({ googleId, name, email });
+    }
+
+    const jwtToken = generateToken(user);
+    res.status(200).json({ token: jwtToken, user });
+  } catch (err) {
+    console.error("Google Auth Error:", err);
+    res.status(401).json({ msg: "Invalid Google token" });
   }
 };
