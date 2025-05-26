@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { fetchEvents } from '../services/api';
-import { Button } from "../components/ui/button"
 
 const EventCard = () => {
     const [events, setEvents] = useState(null);
@@ -39,7 +38,7 @@ const EventCard = () => {
                     </li>
                 ))}
             </ul>
-            <Button>Continue</Button>
+            <button>Continue</button>
         </div >
     );
 };
