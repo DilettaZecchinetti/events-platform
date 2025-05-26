@@ -7,7 +7,6 @@ const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
 const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
 
 export const fetchEvents = async (keyword = "music") => {
-  console.log("Ticketmaster API key:", TICKETMASTER_API_KEY);
   try {
     const { data } = await axios.get(`${BASE_URL}/events.json`, {
       params: {

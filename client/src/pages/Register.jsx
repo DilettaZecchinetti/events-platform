@@ -5,11 +5,12 @@ const Register = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [role, setRole] = useState("user");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const data = await registerUser(name, email, password);
+            const data = await registerUser(name, email, password, role);
             alert("Registration successful!");
             console.log("Registered user:", data);
         } catch (error) {
@@ -49,6 +50,14 @@ const Register = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                </label>
+                <br />
+                <label>
+                    Role:
+                    <select value={role} onChange={(e) => setRole(e.target.value)} required>
+                        <option value="user">User</option>
+                        <option value="staff">Staff</option>
+                    </select>
                 </label>
                 <br />
                 <button type="submit">Sign Up</button>

@@ -13,13 +13,13 @@ export const fetchEvents = async () => {
   }
 };
 
-export const registerUser = async (name, email, password) => {
+export const registerUser = async (name, email, password, role) => {
   try {
     const response = await axios.post(`${API_BASE}/api/auth/signup`, {
       name,
       email,
       password,
-      role: "user",
+      role,
     });
     return response.data;
   } catch (error) {
@@ -30,11 +30,10 @@ export const registerUser = async (name, email, password) => {
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await axios.post("/api/auth/login", {
+    const response = await axios.post(`${API_BASE}/api/auth/login`, {
       email,
       password,
     });
-
     return response.data;
   } catch (error) {
     console.error("Login failed:", error);

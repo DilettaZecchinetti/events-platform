@@ -7,6 +7,8 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Logging in with password:", password);
+
         try {
             const data = await loginUser(email, password);
             localStorage.setItem("token", data.token);
