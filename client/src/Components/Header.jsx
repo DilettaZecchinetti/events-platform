@@ -16,7 +16,6 @@ function Header() {
     return (
         <header className="border-bottom bg-light">
             <div className="container d-flex justify-content-between align-items-center py-3">
-                {/* Logo */}
                 <Link to="/" className="d-flex align-items-center text-decoration-none">
                     <img src={logo} width={100} height={80} alt="Logo" />
                 </Link>

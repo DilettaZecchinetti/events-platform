@@ -1,46 +1,31 @@
-import { useEffect, useState } from 'react';
-import { fetchEvents } from '../services/api';
+import React from 'react';
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import { Link } from "react-router-dom";
+import "../../css/EventCard.css";
 
-const EventCard = () => {
-    const [events, setEvents] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const loadEvents = async () => {
-            try {
-                const data = await fetchEvents();
-                console.log("API response:", data);
-                setEvents(data);
-            } catch (err) {
-                console.error("Error fetching events:", err);
-                setError(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadEvents();
-    }, []);
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Something went wrong: {error.message}</p>;
-    if (!events) return <p>No events found.</p>;
-
+function EventCard({ event }) {
     return (
-        <div>
-            <h1>Music Events</h1>
-            <p>Total events: {events.length}</p>
-            <ul>
-                {events.map(event => (
-                    <li key={event.id} event={event}>
-                        {event.name}
-                    </li>
-                ))}
-            </ul>
-            <button>Continue</button>
-        </div >
+        <Card bg="dark" text="white" className="event-card">
+            <Card.Body className="event-card-body">
+                <div className="event-card-image">
+                    <Card.Img
+                        variant="top"
+                        src={event.images[1].url}
+                        alt={`Image for ${event.name}`}
+                    />
+                </div>
+                <div className="event-card-content">
+                    <Card.Title className="event-title">{event.name}</Card.Title>
+                    <Link to={`/events/${event.event_id}`}>
+                        <Button variant="primary" className="read-more-btn">
+                            Read More
+                        </Button>
+                    </Link>
+                </div>
+            </Card.Body>
+        </Card>
     );
-};
+}
 
 export default EventCard;

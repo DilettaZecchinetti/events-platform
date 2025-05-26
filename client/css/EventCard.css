@@ -1,0 +1,46 @@
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .events-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+  
+  .event-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  }
+  
+  .event-card-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .event-card-content {
+    padding-top: 1rem;
+  }
+  
+  .event-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .read-more-btn {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
