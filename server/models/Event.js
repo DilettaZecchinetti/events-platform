@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
+  externalId: { type: String, required: true, unique: true },
   title: {
     type: String,
     required: true,
