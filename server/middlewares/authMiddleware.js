@@ -6,6 +6,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 /**
  * Middleware to verify JWT and set req.user
  */
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in the environment variables");
+}
+
 export const authenticateUser = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -18,10 +22,16 @@ export const authenticateUser = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    const user = jwt.verify(token, JWT_SECRET);
-    req.user = user; // user object should contain at least userId and role
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (!decoded || !decoded.id) {
+      return res.status(401).json({ error: "Invalid token payload" });
+    }
+
+    req.user = { id: decoded.id, role: decoded.role || "user" };
     next();
   } catch (err) {
+    console.error("Auth error:", err.message);
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
@@ -30,6 +40,7 @@ export const authenticateUser = (req, res, next) => {
  * Middleware to check if user is authenticated
  */
 export const isAuthenticated = (req, res, next) => {
+  console.log("Authentication middleware hit");
   if (req.user) {
     return next();
   }

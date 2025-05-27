@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchEventsById, signUpForEvent } from '../services/api';
-import { Button } from 'react-bootstrap';
+import { fetchEventsById, signupForEvent } from '../services/api.js';
 import { useUser } from "../context/UserContext.jsx";
 
 const EventDetail = () => {
-    const { token } = useUser();
-
-    const [event, setEvent] = useState([]);
+    const { token, user } = useUser();
+    const [event, setEvent] = useState(null);
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [signupMessage, setSignupMessage] = useState('');
-
-
 
     useEffect(() => {
         fetchEventsById(id)
@@ -23,22 +19,35 @@ const EventDetail = () => {
             })
             .catch((err) => {
                 console.error(err);
-                setLoading(false)
+                setError(err);
+                setLoading(false);
             });
     }, [id]);
 
     const handleSignUp = async () => {
         try {
-            const result = await signUpForEvent('Diletta', 'diletta@example.com', id);
-            setSignupMessage('Successfully signed up for the event!');
+            const result = await signupForEvent(id);
+
+            const message = result.msg || result.message || 'Successfully signed up for the event!';
+            setSignupMessage(message);
         } catch (err) {
-            setSignupMessage('Failed to sign up. Please try again.');
+            console.error("Signup failed:", err);
+            const errorMsg =
+                err.response?.data?.error ||
+                err.response?.data?.msg ||
+                err.message ||
+                'Failed to sign up. Please try again.';
+
+            setSignupMessage(errorMsg);
         }
     };
+
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Something went wrong: {error.message}</p>;
     if (!event) return <p>Event not found.</p>;
+
+    // const isSignedUp = token && event.attendees?.includes(user?.id);
 
     return (
         <div>
@@ -52,7 +61,7 @@ const EventDetail = () => {
             {signupMessage && <p>{signupMessage}</p>}
         </div>
     );
-
 };
 
 export default EventDetail;
+

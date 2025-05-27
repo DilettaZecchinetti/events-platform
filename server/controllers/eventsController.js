@@ -1,5 +1,5 @@
 import { fetchEventById, fetchEvents } from "../utils/ticketmaster.js";
-import Signup from "../models/Signup.js";
+import { Event } from "../models/Event.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -21,19 +21,7 @@ export const getEventById = async (req, res) => {
   }
 };
 
-export const signupForEvent = async (req, res) => {
-  try {
-    const { id: eventId } = req.params;
-    const { userId } = req.user;
-
-    const alreadySignedUp = await Signup.findOne({ userId, eventId });
-    if (alreadySignedUp) {
-      return res.status(400).json({ msg: "Already sign up for this event" });
-    }
-
-    const signup = await Signup.create({ userId, eventId });
-    res.status(201).json({ msg: "Successfully signed up", signup });
-  } catch (err) {
-    res.status(500).json({ msg: "Signup failed" });
-  }
+export const signupForEvent = (req, res) => {
+  console.log("Signup controller hit!");
+  res.status(200).json({ msg: "Test passed" });
 };

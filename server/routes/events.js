@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get("/", getEvents);
 router.get("/:id", getEventById);
-router.post("/:id/signup", authenticateUser, signupForEvent); //POST /api/events/:id/signup
+router.post("/:id/signup", authenticateUser, signupForEvent);
 
 export default router;

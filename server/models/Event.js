@@ -25,6 +25,7 @@ const eventSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 export const Event = mongoose.model("Event", eventSchema);

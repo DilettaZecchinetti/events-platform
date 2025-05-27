@@ -19,6 +19,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Events platform API is running!");
 });
+console.log("Loading event routes...");
 app.use("/api/events", eventsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/staff/events", staffRouter);

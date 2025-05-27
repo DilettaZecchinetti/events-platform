@@ -54,12 +54,28 @@ export const loginUser = async (email, password) => {
   }
 };
 
-export const signUpForEvent = async (userName, email, eventId) => {
+export const fetchCurrentUser = async () => {
   const token = localStorage.getItem("token");
+  if (!token) throw new Error("No token found");
+
+  const response = await axios.get("/api/auth/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const signupForEvent = async (eventId) => {
+  if (!eventId) throw new Error("eventId is required");
+
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No token found");
+
   try {
     const response = await axios.post(
       `${API_BASE}/api/events/${eventId}/signup`,
-      { userName, email },
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -68,7 +84,10 @@ export const signUpForEvent = async (userName, email, eventId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error signing up for event:", error);
+    console.error(
+      "Error signing up for event:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
