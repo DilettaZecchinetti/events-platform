@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/api";
+import { useUser } from "../context/UserContext";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const { login } = useUser();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Logging in with password:", password);
 
         try {
             const data = await loginUser(email, password);
-            localStorage.setItem("token", data.token);
+            login(data.user, data.token); // Store user + token in context and localStorage
             alert("Login successful!");
         } catch (err) {
             alert("Login failed. Please check your credentials.");
@@ -50,3 +51,4 @@ const Login = () => {
 };
 
 export default Login;
+

@@ -43,9 +43,32 @@ export const loginUser = async (email, password) => {
       email,
       password,
     });
-    return response.data;
+    const { token, user } = response.data;
+
+    localStorage.setItem("token", token);
+
+    return user;
   } catch (error) {
     console.error("Login failed:", error);
+    throw error;
+  }
+};
+
+export const signUpForEvent = async (userName, email, eventId) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.post(
+      `${API_BASE}/api/events/${eventId}/signup`,
+      { userName, email },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error signing up for event:", error);
     throw error;
   }
 };
