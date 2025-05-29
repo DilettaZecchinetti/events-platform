@@ -4,7 +4,7 @@ const API_BASE = "http://localhost:5000";
 
 export const fetchEvents = async () => {
   try {
-    const response = await axios.get("/api/events");
+    const response = await axios.get(`${API_BASE}/api/events`);
     console.log("API response:", response.data);
     return response.data;
   } catch (error) {
@@ -15,7 +15,7 @@ export const fetchEvents = async () => {
 
 export const fetchEventsById = async (id) => {
   try {
-    const response = await axios.get(`/api/events/${id}`);
+    const response = await axios.get(`${API_BASE}/api/events/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching events by ID:", error);
@@ -58,7 +58,7 @@ export const fetchCurrentUser = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token found");
 
-  const response = await axios.get("/api/auth/me", {
+  const response = await axios.get(`${API_BASE}/api/auth/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -79,7 +79,7 @@ export const signupForEvent = async (eventId, token) => {
 
 export const addEventToCalendar = async (eventId, token) => {
   const response = await axios.post(
-    `/api/calendar/add-event`,
+    `${API_BASE}/api/calendar/add-event`,
     { eventId },
     {
       headers: {

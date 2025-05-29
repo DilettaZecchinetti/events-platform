@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { fetchEventsById, signupForEvent } from '../services/api.js';
+import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
 import { useUser } from "../context/UserContext.jsx";
 
 const EventDetail = () => {
@@ -29,6 +29,55 @@ const EventDetail = () => {
             });
     }, [id]);
 
+    useEffect(() => {
+        function handleMessage(eventMessage) {
+            console.log("Received message from popup:", eventMessage);
+
+            // Allow message only from your backend
+            if (eventMessage.origin !== "http://localhost:5000") return;
+
+            if (eventMessage.data === 'oauth-success') {
+                console.log("OAuth success received. Adding event to calendar...");
+                addEvent();
+            }
+        }
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [event, token]);
+
+
+    const addEvent = async () => {
+        if (!token) {
+            setCalendarMessage("Please log in to add event to your calendar.");
+            return;
+        }
+        if (!event) {
+            setCalendarMessage("Event data not loaded.");
+            return;
+        }
+
+        setCalendarLoading(true);
+        setCalendarMessage("");
+
+        try {
+            const eventData = {
+                summary: event.name,
+                description: event.description || '',
+                start: { dateTime: event.startDateTime || event.startDate, timeZone: 'UTC' },
+                end: { dateTime: event.endDateTime || event.endDate, timeZone: 'UTC' },
+            };
+
+            const result = await addEventToCalendar(eventData, token);
+            setCalendarMessage("Event added to your Google Calendar!");
+        } catch (error) {
+            console.error("Add event failed:", error);
+            setCalendarMessage("Failed to add event to calendar.");
+        } finally {
+            setCalendarLoading(false);
+        }
+    };
+
     const handleSignUp = async () => {
         if (!token) {
             setSignupMessage('You need to log in to sign up for this event.');
@@ -55,10 +104,17 @@ const EventDetail = () => {
 
         setCalendarLoading(true);
         setCalendarMessage("");
+
         try {
-            const response = await axios.get("/api/calendar/oauth", {
-                headers: { Authorization: `Bearer ${token}` },
+            const response = await axios.get("http://localhost:5000/api/calendar/oauth", {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
+
+            console.log("OAuth endpoint response:", response.data);
+
 
             const oauthUrl = response.data.url;
             if (!oauthUrl) throw new Error("No OAuth URL received");
@@ -68,11 +124,14 @@ const EventDetail = () => {
             const left = window.screenX + (window.innerWidth - width) / 2;
             const top = window.screenY + (window.innerHeight - height) / 2;
 
+            console.log("Opening popup with URL:", oauthUrl);
             window.open(
                 oauthUrl,
                 "GoogleOAuth",
                 `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
             );
+            console.log("Popup should be open");
+
 
             setCalendarMessage(
                 "A new window has opened to connect your calendar. Please complete the process there."
@@ -80,11 +139,9 @@ const EventDetail = () => {
         } catch (error) {
             console.error("Calendar OAuth failed:", error);
             setCalendarMessage("Failed to initiate calendar connection.");
+            setCalendarLoading(false);
         }
-        setCalendarLoading(false);
     };
-
-
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Something went wrong: {error.message}</p>;

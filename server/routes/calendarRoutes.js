@@ -5,9 +5,12 @@ import {
   handleOAuthCallback,
   addEventToCalendar,
 } from "../controllers/calendarController.js";
-import { authenticateUser } from "../middlewares/authMiddleware.js";
+import {
+  authenticateUser,
+  authenticateToken,
+} from "../middlewares/authMiddleware.js";
 
-router.get("/oauth", initiateOAuth);
+router.get("/oauth", authenticateToken, initiateOAuth);
 router.get("/auth/google/callback", handleOAuthCallback);
 router.post("/add-event", authenticateUser, addEventToCalendar);
 

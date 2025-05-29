@@ -1,16 +1,14 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import User from "../models/User.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
+const JWT_SECRET = process.env.JWT_SECRET;
 
-/**
- * Middleware to verify JWT and set req.user
- */
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in the environment variables");
 }
 
-export const authenticateUser = (req, res, next) => {
+export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -28,7 +26,13 @@ export const authenticateUser = (req, res, next) => {
       return res.status(401).json({ error: "Invalid token payload" });
     }
 
-    req.user = { id: decoded.id, role: decoded.role || "user" };
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    req.user = user;
     next();
   } catch (err) {
     console.error("Auth error:", err.message);
@@ -57,4 +61,19 @@ export const isStaff = (req, res, next) => {
     return next();
   }
   return res.status(403).json({ error: "Access denied. Staff only." });
+};
+
+export const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.sendStatus(401);
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
 };
