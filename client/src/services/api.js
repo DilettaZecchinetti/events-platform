@@ -66,38 +66,25 @@ export const fetchCurrentUser = async () => {
   return response.data;
 };
 
-// export const signupForEvent = async (eventId) => {
-//   if (!eventId) throw new Error("eventId is required");
-
-//   const token = localStorage.getItem("token");
-//   if (!token) throw new Error("No token found");
-
-//   try {
-//     const response = await axios.post(
-//       `${API_BASE}/api/events/${eventId}/signup`,
-//       {},
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error(
-//       "Error signing up for event:",
-//       error.response?.data || error.message
-//     );
-//     throw error;
-//   }
-// };
-
 export const signupForEvent = async (eventId, token) => {
   const response = await axios.post(
     `${API_BASE}/api/events/${eventId}/signup`,
     {},
     {
       headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data;
+};
+
+export const addEventToCalendar = async (eventId, token) => {
+  const response = await axios.post(
+    `/api/calendar/add-event`,
+    { eventId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
   return response.data;

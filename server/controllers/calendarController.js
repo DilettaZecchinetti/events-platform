@@ -1,17 +1,43 @@
 import { calendarService } from "../utils/calendarService.js";
+import { google } from "googleapis";
+import dotenv from "dotenv";
+dotenv.config();
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  "http://localhost:5000/api/calendar/auth/google/callback"
+);
 
 export const initiateOAuth = (req, res) => {
-  const url = calendarService.getAuthUrl();
-  res.redirect(url);
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    prompt: "consent",
+    scope: ["https://www.googleapis.com/auth/calendar.events"],
+  });
+
+  res.json({ url: authUrl });
 };
 
 export const handleOAuthCallback = async (req, res) => {
-  try {
-    const { tokens } = await calendarService.getTokenFromCode(req.query.code);
+  const { code } = req.query;
 
-    res.status(200).json({ msg: "Calendar connected", tokens });
+  if (!code) {
+    return res.status(400).send("Missing authorization code");
+  }
+
+  try {
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    console.log("Tokens received from Google:", tokens);
+
+    return res.send(
+      "Google Calendar connected successfully! You can close this window."
+    );
   } catch (err) {
-    res.status(500).json({ msg: "OAuth error" });
+    console.error("Error during token exchange:", err);
+    return res.status(500).send("Failed to connect calendar.");
   }
 };
 

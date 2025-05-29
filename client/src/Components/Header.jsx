@@ -1,16 +1,29 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "../../css/Header.css";
 
 function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [theme, setTheme] = useState("light");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        setIsLoggedIn(!!token);
+    }, []);
 
     const toggleTheme = () => {
         setTheme(prev => (prev === "dark" ? "light" : "dark"));
         document.body.classList.toggle("bg-dark");
         document.body.classList.toggle("text-white");
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setIsLoggedIn(false);
+        navigate("/");
     };
 
     return (
@@ -22,7 +35,13 @@ function Header() {
 
                 {/* Desktop Nav */}
                 <nav className="d-none d-md-flex align-items-center gap-3">
-                    <Link to="/login" className="btn btn-primary me-2">Sign In</Link>
+                    {isLoggedIn ? (
+                        <button onClick={handleLogout} className="btn btn-danger me-2">
+                            Log Out
+                        </button>
+                    ) : (
+                        <Link to="/login" className="btn btn-primary me-2">Sign In</Link>
+                    )}
                     <button onClick={toggleTheme} className="btn btn-outline-secondary me-2">
                         {theme === "dark" ? "☀️" : "🌙"}
                     </button>
@@ -53,13 +72,25 @@ function Header() {
             {/* Mobile Dropdown */}
             {menuOpen && (
                 <div className="d-md-none bg-white border-top py-3 px-4">
-                    <Link
-                        to="/login"
-                        className="d-block mb-3 text-decoration-none text-dark"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Sign In
-                    </Link>
+                    {isLoggedIn ? (
+                        <button
+                            className="btn btn-danger w-100 mb-3"
+                            onClick={() => {
+                                handleLogout();
+                                setMenuOpen(false);
+                            }}
+                        >
+                            Log Out
+                        </button>
+                    ) : (
+                        <Link
+                            to="/login"
+                            className="d-block mb-3 text-decoration-none text-dark"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Log In
+                        </Link>
+                    )}
                     <div className="d-flex align-items-center gap-3">
                         <img
                             src="https://i.pravatar.cc/40"

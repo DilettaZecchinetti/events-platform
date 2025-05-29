@@ -7,8 +7,8 @@ import {
 } from "../controllers/calendarController.js";
 import { authenticateUser } from "../middlewares/authMiddleware.js";
 
-router.get("/oauth", authenticateUser, initiateOAuth);
-router.get("/callback", handleOAuthCallback);
+router.get("/oauth", initiateOAuth);
+router.get("/auth/google/callback", handleOAuthCallback);
 router.post("/add-event", authenticateUser, addEventToCalendar);
 
 export default router;
