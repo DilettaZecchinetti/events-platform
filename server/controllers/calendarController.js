@@ -96,42 +96,29 @@ export const addEventToCalendar = async (req, res) => {
 
     oauth2Client.setCredentials(userTokens);
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findById(eventId).lean();
     if (!event) {
       console.log("event not found in database:", eventId);
       return res.status(404).json({ msg: "Event not found in database" });
     }
 
     console.log("event fetched from DB:", event);
+    console.log("event.date from DB:", event.date);
+    console.log("typeof event.date:", typeof event.date);
 
-    const safeParseDate = (input) => {
-      if (!input) return null;
-      const date = new Date(input);
-      return isNaN(date.getTime()) ? null : date;
-    };
-
-    // Log all possible date fields for debugging
-    console.log("Raw date fields:");
-    console.log("event.startDate:", event.startDate);
-    console.log("event.endDate:", event.endDate);
-    console.log("event.date:", event.date);
-
-    const startDate =
-      safeParseDate(event.startDate) || safeParseDate(event.date) || new Date();
-
-    const endDate =
-      safeParseDate(event.endDate) ||
-      safeParseDate(event.date) ||
-      new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour default
+    const startDate = new Date(event.startDate);
+    const endDate = event.endDate
+      ? new Date(event.endDate)
+      : new Date(startDate.getTime() + 60 * 60 * 1000);
 
     console.log("Parsed startDate:", startDate);
     console.log("Parsed endDate:", endDate);
 
-    if (!startDate || !endDate) {
+    if (isNaN(startDate) || isNaN(endDate)) {
       return res.status(400).json({ msg: "Invalid event date(s)" });
     }
 
-    const googleEvent = {
+    const calendarEvent = {
       summary: event.title,
       description: event.description || "",
       start: {
@@ -142,13 +129,13 @@ export const addEventToCalendar = async (req, res) => {
         dateTime: endDate.toISOString(),
         timeZone: "UTC",
       },
-      location: event.venue || "",
+      location: event.location?.venue || "",
     };
 
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
     const response = await calendar.events.insert({
       calendarId: "primary",
-      resource: googleEvent,
+      resource: calendarEvent,
     });
 
     console.log("Google Calendar event added:", response.data);

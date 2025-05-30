@@ -23,73 +23,92 @@ export const getEventById = async (req, res) => {
 };
 
 export const signupForEvent = async (req, res) => {
-  console.log("➡️ Signup controller hit!");
-
-  const eventId = req.params.id;
-  const userId = req.user.id;
+  const { eventId } = req.params;
+  const userId = req.user._id;
 
   try {
     let event = await Event.findOne({ externalId: eventId });
 
     if (!event) {
-      console.log("Event not in DB. Fetching from Ticketmaster...");
-
+      // Fetch from Ticketmaster
       const response = await axios.get(
-        `https://app.ticketmaster.com/discovery/v2/events/${eventId}.json`,
-        {
-          params: { apikey: process.env.TICKETMASTER_API_KEY },
-        }
+        `https://app.ticketmaster.com/discovery/v2/events/${eventId}.json?apikey=${process.env.TICKETMASTER_API_KEY}`
       );
-
       const data = response.data;
 
+      // ✅ Add this block to parse and normalize the dates
+      const startDate = data.dates?.start?.dateTime
+        ? new Date(data.dates.start.dateTime).toISOString()
+        : null;
+
+      const endDate = startDate
+        ? new Date(
+            new Date(startDate).getTime() + 2 * 60 * 60 * 1000
+          ).toISOString()
+        : null;
+
+      // ✅ Ensure this matches your schema (location is an object)
       event = new Event({
         externalId: eventId,
-        title: data.name,
+        title: data.name || "Untitled Event",
         createdBy: userId,
-        date: data.dates?.start?.dateTime,
-        venue: data._embedded?.venues?.[0]?.name,
+        startDate,
+        endDate,
+        location: {
+          venue: data._embedded?.venues?.[0]?.name || "Unknown venue",
+          city: data._embedded?.venues?.[0]?.city?.name || "Unknown city",
+        },
+        url: data.url || "",
+        image: data.images?.[0]?.url || "",
         attendees: [],
       });
 
       await event.save();
     }
 
-    if (event.attendees.includes(userId)) {
-      return res
-        .status(400)
-        .json({ error: "User already signed up for this event" });
+    // Continue with signup logic
+    if (!event.attendees.includes(userId)) {
+      event.attendees.push(userId);
+      await event.save();
     }
 
-    event.attendees.push(userId);
-    await event.save();
-
-    res.json({ message: "Successfully signed up for the event!" });
-  } catch (error) {
-    console.error("Error fetching event from Ticketmaster:", error);
+    res.status(200).json(event);
+  } catch (err) {
+    console.error("Signup error:", err);
     res.status(500).json({ error: "Failed to sign up for event" });
   }
 };
 
 export const createEvent = async (req, res) => {
   try {
-    const existingEvent = await Event.findOne({
-      externalId: req.body.externalId,
-    });
+    const { externalId, startDate, endDate, ...rest } = req.body;
+
+    const existingEvent = await Event.findOne({ externalId });
 
     if (existingEvent) {
       return res.status(200).json(existingEvent);
     }
 
-    const eventData = {
-      ...req.body,
-      createdBy: req.user._id,
-    };
+    const resolvedStartDate = startDate || new Date().toISOString();
+    const resolvedEndDate =
+      endDate ||
+      new Date(
+        new Date(resolvedStartDate).getTime() + 2 * 60 * 60 * 1000
+      ).toISOString();
 
-    const newEvent = await Event.create(eventData);
+    const newEvent = await Event.create({
+      externalId,
+      startDate: resolvedStartDate,
+      endDate: resolvedEndDate,
+      createdBy: req.user._id,
+      ...rest,
+    });
+
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Create event error:", err.message);
-    res.status(400).json({ message: "Failed to save event", error: err });
+    res
+      .status(400)
+      .json({ message: "Failed to save event", error: err.message });
   }
 };

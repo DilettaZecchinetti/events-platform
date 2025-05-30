@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const eventSchema = new mongoose.Schema({
   externalId: { type: String, required: true, unique: true },
