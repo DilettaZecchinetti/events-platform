@@ -6,6 +6,7 @@ import axios from 'axios';
 import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
 import { useUser } from "../context/UserContext.jsx";
 
+
 const EventDetail = () => {
     const { token, user } = useUser();
     const [event, setEvent] = useState(null);
@@ -113,9 +114,8 @@ const EventDetail = () => {
                 return;
             }
 
-            // Build the event object with required fields for backend
             const eventToSave = {
-                externalId: event.id || event.externalId || `ext-${Date.now()}`, // unique string from event or fallback
+                externalId: event.id || event.externalId || `ext-${Date.now()}`,
                 title: event.name || event.title || "Untitled Event",
                 description: event.description || "",
                 startDate: event.startDate
@@ -126,7 +126,7 @@ const EventDetail = () => {
                 endDate: event.endDate
                     ? new Date(event.endDate)
                     : event.date
-                        ? new Date(new Date(event.date).getTime() + 60 * 60 * 1000) // 1 hr after startDate
+                        ? new Date(new Date(event.date).getTime() + 60 * 60 * 1000)
                         : new Date(Date.now() + 60 * 60 * 1000),
                 location: {
                     venue: event.venue || (event.location && event.location.venue) || "",
@@ -219,24 +219,80 @@ const EventDetail = () => {
     if (!event) return <p>Event not found.</p>;
 
     return (
-        <div>
-            <h2>{event.name}</h2>
-            {!token ? (
-                <p>You need to log in to sign up for this event.</p>
-            ) : (
-                <>
-                    <button onClick={handleSignUp} disabled={signupLoading}>
-                        {signupLoading ? 'Signing up...' : 'Sign Up'}
-                    </button>
+        <div className="card shadow-lg p-4 rounded-2xl max-w-xl mx-auto">
+            {/* Event Image */}
+            <div className="w-full h-64 overflow-hidden rounded-xl mb-4">
+                <img
+                    src={event.images[4].url}
+                    alt={event.name}
+                    className="w-full h-full object-cover"
+                />
+            </div>
 
-                    <button onClick={handleAddToCalendar} disabled={calendarLoading} style={{ marginLeft: '1rem' }}>
-                        {calendarLoading ? 'Connecting...' : 'Add to Calendar'}
-                    </button>
-                </>
-            )}
 
-            {signupMessage && <p>{signupMessage}</p>}
-            {calendarMessage && <p>{calendarMessage}</p>}
+            <div className="card-body space-y-3">
+                <h2 className="text-2xl font-bold">{event.name}</h2>
+
+                {event.classifications?.[0]?.genre?.name && (
+                    <p className="text-sm text-gray-600">
+                        <strong>Genre:</strong> {event.classifications[0].genre.name}
+                    </p>
+                )}
+
+                {event.dates?.start?.localDate && (
+                    <p className="text-sm text-gray-600">
+                        <strong>Date:</strong> {event.dates.start.localDate} at {event.dates.start.localTime}
+                    </p>
+                )}
+
+                {event.description && (
+                    <p className="text-base">
+                        <strong>Description:</strong><br />
+                        {event.description.split('\n').map((line, i) => (
+                            <span key={i}>
+                                {line}
+                                <br />
+                            </span>
+                        ))}
+                    </p>
+                )}
+                {event.url && (
+                    <p className="card-text">
+                        <strong>More Info:</strong>{' '}
+                        <a href={event.url} target="_blank" rel="noopener noreferrer">
+                            {event.url}
+                        </a>
+                    </p>
+                )}
+
+                <div className="mt-3">
+                    {!token ? (
+                        <p className="text-danger">You need to log in to sign up for this event.</p>
+                    ) : (
+                        <div className="d-flex flex-wrap gap-2">
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSignUp}
+                                disabled={signupLoading}
+                            >
+                                {signupLoading ? 'Signing up…' : 'Sign Up'}
+                            </button>
+
+                            <button
+                                className="btn btn-success"
+                                onClick={handleAddToCalendar}
+                                disabled={calendarLoading}
+                            >
+                                {calendarLoading ? 'Connecting…' : 'Add to Calendar'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {signupMessage && <p className="text-success mt-3">{signupMessage}</p>}
+                {calendarMessage && <p className="text-info mt-2">{calendarMessage}</p>}
+
+            </div>
         </div>
     );
 };
