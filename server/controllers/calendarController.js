@@ -1,5 +1,6 @@
 import { calendarService } from "../utils/calendarService.js";
 import { google } from "googleapis";
+import { Event } from "../models/Event.js";
 import User from "../models/User.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -67,51 +68,102 @@ export const handleOAuthCallback = async (req, res) => {
 };
 
 export const addEventToCalendar = async (req, res) => {
+  console.log("req.user:", req.user);
+
   try {
     console.log("addEventToCalendar called");
+    console.log("➡️ Request body:", req.body);
+
+    const { eventId } = req.body;
+
+    if (!eventId || typeof eventId !== "string") {
+      console.log("missing or invalid eventId");
+      return res.status(400).json({ msg: "Missing or invalid eventId" });
+    }
 
     if (!req.user) {
-      console.error("No req.user found");
+      console.log("no user found in request");
       return res.status(401).json({ msg: "User not authenticated" });
     }
 
     const userTokens = req.user.googleTokens;
-
     if (!userTokens) {
-      console.error("User has no Google tokens:", req.user._id || req.user.id);
-      return res
-        .status(401)
-        .json({ msg: "User has not authorized Google Calendar" });
+      console.log("Google tokens not found for user", req.user._id);
+      return res.status(401).json({
+        msg: "User has not authorized Google Calendar",
+      });
     }
-
-    console.log("User tokens found:", userTokens);
 
     oauth2Client.setCredentials(userTokens);
 
-    const event = req.body;
-    console.log("Event data received:", event);
-
-    const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-
-    const response = await calendar.events.insert({
-      calendarId: "primary",
-      resource: event,
-    });
-
-    console.log("Google Calendar API response:", response.data);
-
-    res
-      .status(200)
-      .json({ msg: "Event added to calendar", eventId: response.data.id });
-  } catch (err) {
-    console.error("Error in addEventToCalendar:", err);
-
-    if (err.response?.data) {
-      console.error("Google API error response:", err.response.data);
+    const event = await Event.findById(eventId);
+    if (!event) {
+      console.log("event not found in database:", eventId);
+      return res.status(404).json({ msg: "Event not found in database" });
     }
 
-    res
+    console.log("event fetched from DB:", event);
+
+    const safeParseDate = (input) => {
+      if (!input) return null;
+      const date = new Date(input);
+      return isNaN(date.getTime()) ? null : date;
+    };
+
+    // Log all possible date fields for debugging
+    console.log("Raw date fields:");
+    console.log("event.startDate:", event.startDate);
+    console.log("event.endDate:", event.endDate);
+    console.log("event.date:", event.date);
+
+    const startDate =
+      safeParseDate(event.startDate) || safeParseDate(event.date) || new Date();
+
+    const endDate =
+      safeParseDate(event.endDate) ||
+      safeParseDate(event.date) ||
+      new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour default
+
+    console.log("Parsed startDate:", startDate);
+    console.log("Parsed endDate:", endDate);
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ msg: "Invalid event date(s)" });
+    }
+
+    const googleEvent = {
+      summary: event.title,
+      description: event.description || "",
+      start: {
+        dateTime: startDate.toISOString(),
+        timeZone: "UTC",
+      },
+      end: {
+        dateTime: endDate.toISOString(),
+        timeZone: "UTC",
+      },
+      location: event.venue || "",
+    };
+
+    const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+    const response = await calendar.events.insert({
+      calendarId: "primary",
+      resource: googleEvent,
+    });
+
+    console.log("Google Calendar event added:", response.data);
+
+    return res.status(200).json({
+      msg: "Event successfully added to Google Calendar",
+      calendarEventId: response.data.id,
+    });
+  } catch (err) {
+    console.error("add event failed:", err);
+    if (err.response?.data) {
+      console.error("Server response error:", err.response.data);
+    }
+    return res
       .status(500)
-      .json({ msg: "Failed to add event to calendar", error: err.message });
+      .json({ msg: "Failed to add event to Google Calendar" });
   }
 };

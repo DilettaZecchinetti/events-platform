@@ -77,15 +77,26 @@ export const signupForEvent = async (eventId, token) => {
   return response.data;
 };
 
-export const addEventToCalendar = async (eventId, token) => {
-  const response = await axios.post(
-    `${API_BASE}/api/calendar/add-event`,
+// export const addEventToCalendar = async (eventId, token) => {
+//   const response = await axios.post(
+//     `${API_BASE}/api/calendar/add-event`,
+//     { eventId },
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     }
+//   );
+//   return response.data;
+// };
+
+export const addEventToCalendar = (eventId, token) => {
+  return axios.post(
+    "http://localhost:5000/api/calendar/add-event",
     { eventId },
     {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
     }
   );
-  return response.data;
 };

@@ -1,3 +1,5 @@
+import * as jwtDecode from "jwt-decode";
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -19,6 +21,7 @@ const EventDetail = () => {
         setLoading(true);
         fetchEventsById(id)
             .then((data) => {
+                console.log("Fetched event:", data);
                 setEvent(data);
                 setLoading(false);
             })
@@ -31,9 +34,6 @@ const EventDetail = () => {
 
     useEffect(() => {
         function handleMessage(eventMessage) {
-            console.log("Received message from popup:", eventMessage);
-
-            // Allow message only from your backend
             if (eventMessage.origin !== "http://localhost:5000") return;
 
             if (eventMessage.data === 'oauth-success') {
@@ -46,37 +46,113 @@ const EventDetail = () => {
         return () => window.removeEventListener('message', handleMessage);
     }, [event, token]);
 
-
-    const addEvent = async () => {
-        if (!token) {
-            setCalendarMessage("Please log in to add event to your calendar.");
-            return;
-        }
-        if (!event) {
-            setCalendarMessage("Event data not loaded.");
-            return;
-        }
-
-        setCalendarLoading(true);
-        setCalendarMessage("");
-
+    const getUserIdFromToken = (token) => {
         try {
-            const eventData = {
-                summary: event.name,
-                description: event.description || '',
-                start: { dateTime: event.startDateTime || event.startDate, timeZone: 'UTC' },
-                end: { dateTime: event.endDateTime || event.endDate, timeZone: 'UTC' },
-            };
-
-            const result = await addEventToCalendar(eventData, token);
-            setCalendarMessage("Event added to your Google Calendar!");
-        } catch (error) {
-            console.error("Add event failed:", error);
-            setCalendarMessage("Failed to add event to calendar.");
-        } finally {
-            setCalendarLoading(false);
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+                    .join('')
+            );
+            const decoded = JSON.parse(jsonPayload);
+            console.log("Decoded JWT payload:", decoded);
+            return decoded.id || decoded._id || decoded.userId || decoded.sub || null;
+        } catch (e) {
+            console.error('Error decoding token manually', e);
+            return null;
         }
     };
+
+
+
+    const saveEventToDB = async (eventObj, token) => {
+        // Convert dates to ISO strings
+        const sanitizedEvent = {
+            ...eventObj,
+            startDate: new Date(eventObj.startDate).toISOString(),
+            endDate: new Date(eventObj.endDate).toISOString(),
+        };
+
+        console.log("Saving event to DB:", sanitizedEvent);
+
+        const response = await axios.post(
+            "http://localhost:5000/api/events",
+            sanitizedEvent,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+
+        return response.data;
+    };
+
+
+    const addEvent = async () => {
+        if (!event) {
+            console.log("No event data available.");
+            alert("No event data available.");
+            return;
+        }
+
+        try {
+            const tokenFromStorage = localStorage.getItem("token");
+            console.log("Token from localStorage:", tokenFromStorage);
+
+            const userId = getUserIdFromToken(tokenFromStorage);
+            console.log("Extracted userId from token:", userId);
+
+            if (!userId) {
+                console.log("User not authenticated properly: userId not found.");
+                alert("User not authenticated properly.");
+                return;
+            }
+
+            // Build the event object with required fields for backend
+            const eventToSave = {
+                externalId: event.id || event.externalId || `ext-${Date.now()}`, // unique string from event or fallback
+                title: event.name || event.title || "Untitled Event",
+                description: event.description || "",
+                startDate: event.startDate
+                    ? new Date(event.startDate)
+                    : event.date
+                        ? new Date(event.date)
+                        : new Date(), // fallback current date
+                endDate: event.endDate
+                    ? new Date(event.endDate)
+                    : event.date
+                        ? new Date(new Date(event.date).getTime() + 60 * 60 * 1000) // 1 hr after startDate
+                        : new Date(Date.now() + 60 * 60 * 1000),
+                location: {
+                    venue: event.venue || (event.location && event.location.venue) || "",
+                    city: event.city || (event.location && event.location.city) || "",
+                },
+                image: event.image || "",
+                createdBy: userId,
+                url: event.url || "",
+                attendees: [],
+            };
+
+            console.log("Event object to save:", eventToSave);
+
+            const savedEvent = await saveEventToDB(eventToSave, tokenFromStorage);
+            console.log("Saved event to DB response:", savedEvent);
+
+            await addEventToCalendar(savedEvent._id, tokenFromStorage);
+            console.log("Event added to calendar with ID:", savedEvent._id);
+
+            alert("Event added to calendar!");
+        } catch (err) {
+            console.error("Add event failed:", err);
+            alert("Failed to add event to calendar.");
+        }
+    };
+
 
     const handleSignUp = async () => {
         if (!token) {
@@ -92,8 +168,9 @@ const EventDetail = () => {
         } catch (err) {
             console.error("Signup failed:", err);
             setSignupMessage(err.response?.data?.error || 'Failed to sign up. Please try again.');
+        } finally {
+            setSignupLoading(false);
         }
-        setSignupLoading(false);
     };
 
     const handleAddToCalendar = async () => {
@@ -113,9 +190,6 @@ const EventDetail = () => {
                 },
             });
 
-            console.log("OAuth endpoint response:", response.data);
-
-
             const oauthUrl = response.data.url;
             if (!oauthUrl) throw new Error("No OAuth URL received");
 
@@ -124,14 +198,11 @@ const EventDetail = () => {
             const left = window.screenX + (window.innerWidth - width) / 2;
             const top = window.screenY + (window.innerHeight - height) / 2;
 
-            console.log("Opening popup with URL:", oauthUrl);
             window.open(
                 oauthUrl,
                 "GoogleOAuth",
                 `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
             );
-            console.log("Popup should be open");
-
 
             setCalendarMessage(
                 "A new window has opened to connect your calendar. Please complete the process there."
@@ -171,3 +242,4 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
+

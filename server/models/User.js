@@ -13,6 +13,13 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   role: { type: String, enum: ["user", "staff"], default: "user" },
   createdAt: { type: Date, default: Date.now },
+  googleTokens: {
+    access_token: String,
+    refresh_token: String,
+    scope: String,
+    token_type: String,
+    expiry_date: Number,
+  },
 });
 
 userSchema.pre("save", async function (next) {

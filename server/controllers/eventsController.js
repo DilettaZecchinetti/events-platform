@@ -43,11 +43,10 @@ export const signupForEvent = async (req, res) => {
 
       const data = response.data;
 
-      // Create new event document with required fields filled in
       event = new Event({
         externalId: eventId,
-        title: data.name, // required field — map to Ticketmaster event name
-        createdBy: userId, // required field — current user ID from JWT token
+        title: data.name,
+        createdBy: userId,
         date: data.dates?.start?.dateTime,
         venue: data._embedded?.venues?.[0]?.name,
         attendees: [],
@@ -56,7 +55,6 @@ export const signupForEvent = async (req, res) => {
       await event.save();
     }
 
-    // Now sign up the user if not already signed up
     if (event.attendees.includes(userId)) {
       return res
         .status(400)
@@ -70,5 +68,28 @@ export const signupForEvent = async (req, res) => {
   } catch (error) {
     console.error("Error fetching event from Ticketmaster:", error);
     res.status(500).json({ error: "Failed to sign up for event" });
+  }
+};
+
+export const createEvent = async (req, res) => {
+  try {
+    const existingEvent = await Event.findOne({
+      externalId: req.body.externalId,
+    });
+
+    if (existingEvent) {
+      return res.status(200).json(existingEvent);
+    }
+
+    const eventData = {
+      ...req.body,
+      createdBy: req.user._id,
+    };
+
+    const newEvent = await Event.create(eventData);
+    res.status(201).json(newEvent);
+  } catch (err) {
+    console.error("Create event error:", err.message);
+    res.status(400).json({ message: "Failed to save event", error: err });
   }
 };
