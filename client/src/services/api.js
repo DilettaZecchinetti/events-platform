@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_BASE = "http://localhost:5000";
+const STAFF_API_URL = "/api/staff/events";
 
 export const fetchEvents = async () => {
   try {
@@ -47,7 +48,7 @@ export const loginUser = async (email, password) => {
 
     localStorage.setItem("token", token);
 
-    return user;
+    return { user, token };
   } catch (error) {
     console.error("Login failed:", error);
     throw error;
@@ -77,19 +78,6 @@ export const signupForEvent = async (eventId, token) => {
   return response.data;
 };
 
-// export const addEventToCalendar = async (eventId, token) => {
-//   const response = await axios.post(
-//     `${API_BASE}/api/calendar/add-event`,
-//     { eventId },
-//     {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     }
-//   );
-//   return response.data;
-// };
-
 export const addEventToCalendar = (eventId, token) => {
   return axios.post(
     "http://localhost:5000/api/calendar/add-event",
@@ -99,4 +87,48 @@ export const addEventToCalendar = (eventId, token) => {
       withCredentials: true,
     }
   );
+};
+
+export const createEvent = async (data, token) => {
+  return axios
+    .post("/api/events", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => res.data);
+};
+
+export const updateEvent = async (id, data, token) => {
+  return axios
+    .put(`/api/events/${id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => res.data);
+};
+
+export const deleteEvent = async (id, token) => {
+  return axios
+    .delete(`/api/events/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => res.data);
+};
+
+export const getUserEvents = async (token) => {
+  const response = await axios.get(`${STAFF_API_BASE}/api/events/my-events`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!Array.isArray(response.data)) {
+    throw new Error("Expected an array of events");
+  }
+
+  return response.data;
 };

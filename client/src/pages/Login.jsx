@@ -14,13 +14,13 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const user = await loginUser(email, password);
+            const { user, token } = await loginUser(email, password);
 
-            if (!user) {
-                throw new Error("Login failed: no user returned");
+            if (!user || !token) {
+                throw new Error("Login failed: no user or token returned");
             }
 
-            login(user);
+            login(user, token);
 
             alert("Login successful!");
             navigate("/");
