@@ -1,6 +1,6 @@
 import * as jwtDecode from "jwt-decode";
 
-import { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
@@ -33,19 +33,22 @@ const EventDetail = () => {
             });
     }, [id]);
 
+    const hasHandledOAuth = useRef(false);
+
     useEffect(() => {
         function handleMessage(eventMessage) {
             if (eventMessage.origin !== "http://localhost:5000") return;
 
-            if (eventMessage.data === 'oauth-success') {
+            if (eventMessage.data === 'oauth-success' && !hasHandledOAuth.current) {
                 console.log("OAuth success received. Adding event to calendar...");
+                hasHandledOAuth.current = true;
                 addEvent();
             }
         }
 
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
-    }, [event, token]);
+    }, []);
 
     const getUserIdFromToken = (token) => {
         try {
@@ -173,7 +176,7 @@ const EventDetail = () => {
         }
     };
 
-    const handleAddToCalendar = async () => {
+    const handleAddToCalendar = async (eventId) => {
         if (!token) {
             setCalendarMessage("Please log in to add event to your calendar.");
             return;
@@ -183,16 +186,16 @@ const EventDetail = () => {
         setCalendarMessage("");
 
         try {
-            const response = await axios.get("http://localhost:5000/api/calendar/oauth", {
+            // Initiate OAuth popup
+            const oauthResponse = await axios.get("http://localhost:5000/api/calendar/oauth", {
                 withCredentials: true,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
 
-            const oauthUrl = response.data.url;
+            const oauthUrl = oauthResponse.data.url;
             if (!oauthUrl) throw new Error("No OAuth URL received");
 
+            // Open OAuth window
             const width = 500;
             const height = 600;
             const left = window.screenX + (window.innerWidth - width) / 2;
@@ -204,12 +207,13 @@ const EventDetail = () => {
                 `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
             );
 
-            setCalendarMessage(
-                "A new window has opened to connect your calendar. Please complete the process there."
-            );
+            const addEventResponse = await addEventToCalendar(eventId, token);
+
+            setCalendarMessage(addEventResponse.data.msg || "Event added to your calendar!");
         } catch (error) {
-            console.error("Calendar OAuth failed:", error);
-            setCalendarMessage("Failed to initiate calendar connection.");
+            console.error("Calendar add failed:", error);
+            setCalendarMessage("Failed to add event to calendar.");
+        } finally {
             setCalendarLoading(false);
         }
     };
