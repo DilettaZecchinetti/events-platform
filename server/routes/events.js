@@ -5,6 +5,9 @@ import {
   signupForEvent,
   createEvent,
   getUserEvents,
+  getAllManualEvents,
+  getManualEventById,
+  getTicketmasterEventById,
 } from "../controllers/eventsController.js";
 import {
   authenticateUser,
@@ -15,9 +18,12 @@ import {
 const router = express.Router();
 
 router.get("/", getEvents);
+router.get("/manual", getAllManualEvents);
+router.get("/manual/:id", getManualEventById);
+router.get("/ticketmaster/:id", getTicketmasterEventById);
 router.get("/:id", getEventById);
+
 router.post("/", authenticateUser, isAuthenticated, createEvent);
 router.post("/:id/signup", authenticateUser, isAuthenticated, signupForEvent);
-router.get("/my-events", authenticateUser, isStaff, getUserEvents);
 
 export default router;

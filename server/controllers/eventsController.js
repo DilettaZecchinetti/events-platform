@@ -1,4 +1,5 @@
 import axios from "axios";
+import mongoose from "mongoose";
 import { fetchEventById, fetchEvents } from "../utils/ticketmaster.js";
 import { Event } from "../models/Event.js";
 
@@ -14,11 +15,38 @@ export const getEvents = async (req, res) => {
 };
 
 export const getEventById = async (req, res) => {
+  const id = req.params.id;
+
   try {
-    const event = await fetchEventById(req.params.id);
-    res.status(200).json(event);
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      // Fetch event from your DB
+      const event = await Event.findById(id);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found in database" });
+      }
+      return res.status(200).json(event);
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "Missing event ID" });
+    }
+
+    const event = await fetchEventById(id);
+
+    return res.status(200).json(event);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch event by id" });
+    console.error("Error in getEventById:", err.message);
+
+    if (err.response?.status === 404) {
+      return res.status(404).json({ error: "Ticketmaster event not found" });
+    }
+    if (err.response?.status === 429) {
+      return res.status(429).json({
+        error: "Too many requests to Ticketmaster API, please try later",
+      });
+    }
+
+    return res.status(500).json({ error: "Failed to fetch event by id" });
   }
 };
 
@@ -77,14 +105,7 @@ export const signupForEvent = async (req, res) => {
 
 export const createEvent = async (req, res) => {
   try {
-    const { externalId, startDate, endDate, ...rest } = req.body;
-
-    if (externalId) {
-      const existingEvent = await Event.findOne({ externalId });
-      if (existingEvent) {
-        return res.status(200).json(existingEvent);
-      }
-    }
+    const { startDate, endDate, ...rest } = req.body;
 
     const resolvedStartDate = startDate || new Date().toISOString();
     const resolvedEndDate =
@@ -97,12 +118,9 @@ export const createEvent = async (req, res) => {
       startDate: resolvedStartDate,
       endDate: resolvedEndDate,
       createdBy: req.user._id,
+      source: "manual",
       ...rest,
     };
-
-    if (externalId) {
-      newEventData.externalId = externalId;
-    }
 
     const newEvent = await Event.create(newEventData);
 
@@ -136,5 +154,56 @@ export const getUserEvents = async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
+const TICKETMASTER_BASE_URL =
+  "https://app.ticketmaster.com/discovery/v2/events";
+
+// Fetch manual event by MongoDB ObjectId
+export const getManualEventById = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event)
+      return res.status(404).json({ error: "Manual event not found" });
+    res.status(200).json(event);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch manual event by ID" });
+  }
+};
+
+// Fetch Ticketmaster event by Ticketmaster ID via Axios
+export const getTicketmasterEventById = async (req, res) => {
+  const tmEventId = req.params.id;
+  try {
+    const response = await axios.get(
+      `${TICKETMASTER_BASE_URL}/${tmEventId}.json`,
+      {
+        params: { apikey: TICKETMASTER_API_KEY },
+      }
+    );
+    res.status(200).json(response.data);
+  } catch (err) {
+    // Log error and send status accordingly
+    if (err.response && err.response.status === 404) {
+      return res.status(404).json({ error: "Ticketmaster event not found" });
+    }
+    if (err.response && err.response.status === 429) {
+      return res
+        .status(429)
+        .json({ error: "Ticketmaster API rate limit exceeded" });
+    }
+    res.status(500).json({ error: "Failed to fetch Ticketmaster event by ID" });
+  }
+};
+
+export const getAllManualEvents = async (req, res) => {
+  try {
+    const manualEvents = await Event.find({ source: "manual" });
+    res.json(manualEvents);
+  } catch (err) {
+    console.error("Error fetching manual events:", err);
+    res.status(500).json({ message: "Failed to fetch manual events" });
   }
 };

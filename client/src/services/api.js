@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const API_BASE = "http://localhost:5000";
-const STAFF_API_URL = "/api/staff/events";
 
 export const fetchEvents = async () => {
   try {
@@ -119,16 +118,28 @@ export const deleteEvent = async (id, token) => {
     .then((res) => res.data);
 };
 
-export const getUserEvents = async (token) => {
-  const response = await axios.get(`${STAFF_API_BASE}/api/events/my-events`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!Array.isArray(response.data)) {
-    throw new Error("Expected an array of events");
+export const fetchManualEventById = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/manual/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch manual event:", error);
+    throw error;
   }
+};
 
+export const fetchTicketmasterEventById = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ticketmaster/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch Ticketmaster event:", error);
+    throw error;
+  }
+};
+
+export const getManualEvents = async () => {
+  const API_BASE_URL = "http://localhost:5000/api/events";
+  const response = await axios.get(`${API_BASE_URL}/manual`);
   return response.data;
 };

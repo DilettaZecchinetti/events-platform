@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { createEvent, updateEvent, deleteEvent, getUserEvents } from "../services/api";
+
+import { createEvent, updateEvent, deleteEvent, getManualEvents } from "../services/api";
 import { useUser } from "../context/UserContext";
 
 const StaffDashboard = () => {
-    const { token, user } = useUser();
-    const [formData, setFormData] = useState({ title: "", description: "" });
+    const { token } = useUser();
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+    });
     const [eventIdToEdit, setEventIdToEdit] = useState(null);
     const [events, setEvents] = useState([]);
 
     const fetchEvents = async () => {
         try {
-            const userEvents = await getUserEvents(token);
+            const userEvents = await getManualEvents();
             const normalizedEvents = Array.isArray(userEvents)
-                ? userEvents.map(event => ({ ...event, _id: event.id }))
+                ? userEvents.map(event => ({ ...event, _id: event._id }))
                 : [];
 
             setEvents(normalizedEvents);
@@ -29,7 +35,7 @@ const StaffDashboard = () => {
         try {
             const newEvent = await createEvent(formData, token);
             console.log("Created:", newEvent);
-            setFormData({ title: "", description: "" });
+            resetForm();
             fetchEvents();
         } catch (err) {
             console.error("Create error:", err.message);
@@ -40,7 +46,7 @@ const StaffDashboard = () => {
         try {
             const updated = await updateEvent(eventIdToEdit, formData, token);
             console.log("Updated:", updated);
-            setFormData({ title: "", description: "" });
+            resetForm();
             setEventIdToEdit(null);
             fetchEvents();
         } catch (err) {
@@ -60,7 +66,21 @@ const StaffDashboard = () => {
 
     const startEditing = (event) => {
         setEventIdToEdit(event._id);
-        setFormData({ title: event.title, description: event.description });
+        setFormData({
+            title: event.title || "",
+            description: event.description || "",
+            startDate: event.startDate ? event.startDate.slice(0, 10) : "",
+            endDate: event.endDate ? event.endDate.slice(0, 10) : "",
+        });
+    };
+
+    const resetForm = () => {
+        setFormData({
+            title: "",
+            description: "",
+            startDate: "",
+            endDate: "",
+        });
     };
 
     return (
@@ -76,16 +96,24 @@ const StaffDashboard = () => {
                 <textarea
                     placeholder="Description"
                     value={formData.description}
-                    onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+                <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                />
+                <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 />
                 <button onClick={eventIdToEdit ? handleUpdate : handleCreate}>
                     {eventIdToEdit ? "Update Event" : "Create Event"}
                 </button>
                 {eventIdToEdit && (
                     <button onClick={() => {
-                        setFormData({ title: "", description: "" });
+                        resetForm();
                         setEventIdToEdit(null);
                     }}>
                         Cancel Edit
@@ -95,7 +123,7 @@ const StaffDashboard = () => {
 
             <hr />
 
-            <h3>Your Events</h3>
+            <h3>Staff Events</h3>
             {events.length === 0 ? (
                 <p>No events created yet.</p>
             ) : (
@@ -103,6 +131,10 @@ const StaffDashboard = () => {
                     {events.map((event) => (
                         <li key={event._id}>
                             <strong>{event.title}</strong> - {event.description}
+                            <br />
+                            <em>
+                                {event.startDate?.slice(0, 10)} to {event.endDate?.slice(0, 10)}
+                            </em>
                             <br />
                             <button onClick={() => startEditing(event)}>Edit</button>
                             <button onClick={() => handleDelete(event._id)}>Delete</button>
