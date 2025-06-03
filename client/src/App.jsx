@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import EventDetail from './Components/EventDetail'
 import StaffDashboard from './Components/StaffDashboard';
+import ManualEventList from './Components/ManualEventsList';
 import { useUser } from "./context/UserContext";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/staff-events" element={<ManualEventList />} />
       </Routes>
     </Router>
   )
