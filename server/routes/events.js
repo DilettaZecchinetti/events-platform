@@ -4,10 +4,11 @@ import {
   getEventById,
   signupForEvent,
   createEvent,
-  getUserEvents,
   getAllManualEvents,
   getManualEventById,
   getTicketmasterEventById,
+  deleteEvent,
+  updateEvent,
 } from "../controllers/eventsController.js";
 import {
   authenticateUser,
@@ -20,6 +21,8 @@ const router = express.Router();
 router.get("/", getEvents);
 router.get("/manual", getAllManualEvents);
 router.get("/manual/:id", getManualEventById);
+router.put("/:id", authenticateUser, isAuthenticated, updateEvent);
+router.delete("/:id", authenticateUser, isAuthenticated, deleteEvent);
 router.get("/ticketmaster/:id", getTicketmasterEventById);
 router.get("/:id", getEventById);
 

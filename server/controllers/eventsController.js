@@ -207,3 +207,53 @@ export const getAllManualEvents = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch manual events" });
   }
 };
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.createdBy.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this event" });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Delete event error:", err.message);
+    res.status(500).json({ message: "Failed to delete event" });
+  }
+};
+
+export const updateEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.createdBy.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this event" });
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json(updatedEvent);
+  } catch (err) {
+    console.error("Update event error:", err.message);
+    res.status(500).json({ message: "Failed to update event" });
+  }
+};

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import { createEvent, updateEvent, deleteEvent, getManualEvents } from "../services/api";
 import { useUser } from "../context/UserContext";
 
@@ -8,8 +7,8 @@ const StaffDashboard = () => {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        startDate: "",
-        endDate: "",
+        startDateTime: "",
+        endDateTime: "",
     });
     const [eventIdToEdit, setEventIdToEdit] = useState(null);
     const [events, setEvents] = useState([]);
@@ -33,7 +32,14 @@ const StaffDashboard = () => {
 
     const handleCreate = async () => {
         try {
-            const newEvent = await createEvent(formData, token);
+            const newEvent = await createEvent(
+                {
+                    ...formData,
+                    startDate: formData.startDateTime,
+                    endDate: formData.endDateTime,
+                },
+                token
+            );
             console.log("Created:", newEvent);
             resetForm();
             fetchEvents();
@@ -44,7 +50,15 @@ const StaffDashboard = () => {
 
     const handleUpdate = async () => {
         try {
-            const updated = await updateEvent(eventIdToEdit, formData, token);
+            const updated = await updateEvent(
+                eventIdToEdit,
+                {
+                    ...formData,
+                    startDate: formData.startDateTime,
+                    endDate: formData.endDateTime,
+                },
+                token
+            );
             console.log("Updated:", updated);
             resetForm();
             setEventIdToEdit(null);
@@ -69,8 +83,8 @@ const StaffDashboard = () => {
         setFormData({
             title: event.title || "",
             description: event.description || "",
-            startDate: event.startDate ? event.startDate.slice(0, 10) : "",
-            endDate: event.endDate ? event.endDate.slice(0, 10) : "",
+            startDateTime: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
+            endDateTime: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
         });
     };
 
@@ -78,8 +92,8 @@ const StaffDashboard = () => {
         setFormData({
             title: "",
             description: "",
-            startDate: "",
-            endDate: "",
+            startDateTime: "",
+            endDateTime: "",
         });
     };
 
@@ -99,14 +113,14 @@ const StaffDashboard = () => {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
                 <input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    type="datetime-local"
+                    value={formData.startDateTime}
+                    onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })}
                 />
                 <input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    type="datetime-local"
+                    value={formData.endDateTime}
+                    onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
                 />
                 <button onClick={eventIdToEdit ? handleUpdate : handleCreate}>
                     {eventIdToEdit ? "Update Event" : "Create Event"}
@@ -133,7 +147,7 @@ const StaffDashboard = () => {
                             <strong>{event.title}</strong> - {event.description}
                             <br />
                             <em>
-                                {event.startDate?.slice(0, 10)} to {event.endDate?.slice(0, 10)}
+                                {new Date(event.startDate).toLocaleString()} to {new Date(event.endDate).toLocaleString()}
                             </em>
                             <br />
                             <button onClick={() => startEditing(event)}>Edit</button>
