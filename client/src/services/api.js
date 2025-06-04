@@ -143,3 +143,17 @@ export const getManualEvents = async () => {
   const response = await axios.get(`${API_BASE_URL}/manual`);
   return response.data;
 };
+
+export const fetchFromTicketmaster = async (externalId) => {
+  const API_KEY = process.env.TICKETMASTER_API_KEY;
+
+  try {
+    const res = await axios.get(
+      `https://app.ticketmaster.com/discovery/v2/events/${externalId}.json?apikey=${API_KEY}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Failed to fetch from Ticketmaster", error.message);
+    return null;
+  }
+};

@@ -9,6 +9,7 @@ import {
   getTicketmasterEventById,
   deleteEvent,
   updateEvent,
+  getEventByExternalId,
 } from "../controllers/eventsController.js";
 import {
   authenticateUser,
@@ -24,6 +25,7 @@ router.get("/manual/:id", getManualEventById);
 router.put("/:id", authenticateUser, isAuthenticated, updateEvent);
 router.delete("/:id", authenticateUser, isAuthenticated, deleteEvent);
 router.get("/ticketmaster/:id", getTicketmasterEventById);
+router.get("/external/:externalId", authenticateUser, getEventByExternalId);
 router.get("/:id", getEventById);
 
 router.post("/", authenticateUser, isAuthenticated, createEvent);

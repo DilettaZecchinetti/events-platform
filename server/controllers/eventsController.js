@@ -52,7 +52,17 @@ export const getEventById = async (req, res) => {
 
 export const createEvent = async (req, res) => {
   try {
-    const { startDate, endDate, ...rest } = req.body;
+    const { startDate, endDate, externalId, ...rest } = req.body;
+
+    if (!externalId) {
+      return res.status(400).json({ message: "externalId is required" });
+    }
+
+    let existingEvent = await Event.findOne({ externalId });
+
+    if (existingEvent) {
+      return res.status(200).json(existingEvent);
+    }
 
     const resolvedStartDate = startDate || new Date().toISOString();
     const resolvedEndDate =
@@ -66,6 +76,7 @@ export const createEvent = async (req, res) => {
       endDate: resolvedEndDate,
       createdBy: req.user._id,
       source: "manual",
+      externalId,
       ...rest,
     };
 
@@ -289,5 +300,18 @@ export const signupForEvent = async (req, res) => {
   } catch (err) {
     console.error("Signup error:", err);
     res.status(500).json({ error: "Failed to sign up for event" });
+  }
+};
+
+export const getEventByExternalId = async (req, res) => {
+  try {
+    const event = await Event.findOne({ externalId: req.params.externalId });
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    res.status(200).json(event);
+  } catch (err) {
+    console.error("Error fetching event by externalId:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

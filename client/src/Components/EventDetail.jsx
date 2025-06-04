@@ -1,4 +1,3 @@
-import * as jwtDecode from "jwt-decode";
 import React, { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -7,66 +6,59 @@ import { useUser } from "../context/UserContext.jsx";
 
 const EventDetail = () => {
     const { token } = useUser();
-    const [event, setEvent] = useState(null);
     const { id } = useParams();
+    const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [signupMessage, setSignupMessage] = useState('');
     const [signupLoading, setSignupLoading] = useState(false);
     const [calendarMessage, setCalendarMessage] = useState('');
     const [calendarLoading, setCalendarLoading] = useState(false);
-
     const hasHandledOAuth = useRef(false);
 
     useEffect(() => {
-        setLoading(true);
-        fetchEventsById(id)
-            .then((data) => {
-                console.log("Fetched event:", data);
+        const loadEvent = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchEventsById(id);
                 setEvent(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error(err);
+            } catch (err) {
                 setError(err);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+        loadEvent();
     }, [id]);
 
     useEffect(() => {
-        function handleMessage(eventMessage) {
-            if (eventMessage.origin !== "http://localhost:5000") return;
+        const handleMessage = (e) => {
+            if (e.origin !== "http://localhost:5000") return;
 
-            if (eventMessage.data === 'oauth-success' && !hasHandledOAuth.current) {
-                console.log("OAuth success received. Adding event to calendar...");
+            if (e.data === 'oauth-success' && !hasHandledOAuth.current) {
                 hasHandledOAuth.current = true;
 
-                const waitForEvent = async () => {
+                const waitForEventThenAdd = async () => {
                     let attempts = 0;
                     while (!event && attempts < 10) {
-                        console.log("Waiting for event to be loaded...");
                         await new Promise((res) => setTimeout(res, 300));
                         attempts++;
                     }
-                    if (event) {
-                        addEvent();
-                    } else {
-                        alert("Event data still not available after OAuth.");
-                    }
+                    if (event) addEvent();
+                    else alert("Event still not loaded after OAuth.");
                 };
 
-                waitForEvent();
+                waitForEventThenAdd();
             }
-        }
+        };
 
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
     }, [event]);
 
-    const getUserIdFromToken = (token) => {
+    const getUserIdFromToken = (jwt) => {
         try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const base64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
             const jsonPayload = decodeURIComponent(
                 atob(base64)
                     .split('')
@@ -74,65 +66,44 @@ const EventDetail = () => {
                     .join('')
             );
             const decoded = JSON.parse(jsonPayload);
-            return decoded.id || decoded._id || decoded.userId || decoded.sub || null;
-        } catch (e) {
-            console.error('Error decoding token manually', e);
+            return decoded.id || decoded._id || decoded.sub || null;
+        } catch {
             return null;
         }
     };
 
-    const saveEventToDB = async (eventObj, token) => {
-        const sanitizedEvent = {
+    const saveEventToDB = async (eventObj, jwt) => {
+        const cleaned = {
             ...eventObj,
             startDate: new Date(eventObj.startDate).toISOString(),
             endDate: new Date(eventObj.endDate).toISOString(),
         };
-
-        const response = await axios.post(
-            "http://localhost:5000/api/events",
-            sanitizedEvent,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                withCredentials: true,
-            }
-        );
-
-        return response.data;
+        const res = await axios.post("http://localhost:5000/api/events", cleaned, {
+            headers: {
+                Authorization: `Bearer ${jwt}`,
+                "Content-Type": "application/json",
+            },
+            withCredentials: true,
+        });
+        return res.data;
     };
 
     const addEvent = async () => {
-        if (!event) {
-            console.log("No event data available.");
-            alert("No event data available.");
-            return;
-        }
+        if (!event) return alert("Event data missing.");
+        const jwt = localStorage.getItem("token");
+        const userId = getUserIdFromToken(jwt);
+        if (!userId) return alert("You must be logged in.");
 
         try {
-            const tokenFromStorage = localStorage.getItem("token");
-            const userId = getUserIdFromToken(tokenFromStorage);
-
-            if (!userId) {
-                alert("User not authenticated properly.");
-                return;
-            }
+            const start = event.startDate || event.dates?.start?.dateTime;
+            const end = event.endDate || (start ? new Date(new Date(start).getTime() + 3600000) : null);
 
             const eventToSave = {
-                externalId: event.id || event.externalId || `ext-${Date.now()}`,
-                title: event.name || event.title || "Untitled Event",
+                externalId: event.externalId || event.id || `ext-${Date.now()}`,
+                title: event.title || event.name || "Untitled Event",
                 description: event.description || "",
-                startDate: event.startDate
-                    ? new Date(event.startDate)
-                    : event.dates?.start?.dateTime
-                        ? new Date(event.dates.start.dateTime)
-                        : new Date(),
-                endDate: event.endDate
-                    ? new Date(event.endDate)
-                    : event.dates?.start?.dateTime
-                        ? new Date(new Date(event.dates.start.dateTime).getTime() + 60 * 60 * 1000)
-                        : new Date(Date.now() + 60 * 60 * 1000),
+                startDate: start,
+                endDate: end,
                 location: {
                     venue: event.venue || event._embedded?.venues?.[0]?.name || "",
                     city: event.city || event._embedded?.venues?.[0]?.city?.name || "",
@@ -143,150 +114,113 @@ const EventDetail = () => {
                 attendees: [],
             };
 
-            const savedEvent = await saveEventToDB(eventToSave, tokenFromStorage);
-            await addEventToCalendar(savedEvent._id, tokenFromStorage);
-
+            const saved = await saveEventToDB(eventToSave, jwt);
+            await addEventToCalendar(saved._id, jwt);
             alert("Event added to calendar!");
         } catch (err) {
-            console.error("Add event failed:", err);
-            alert("Failed to add event to calendar.");
+            console.error(err);
+            alert("Failed to add to calendar.");
         }
     };
 
     const handleSignUp = async () => {
-        if (!token) {
-            setSignupMessage('You need to log in to sign up for this event.');
-            return;
-        }
+        if (!token) return setSignupMessage("Log in to sign up.");
 
         setSignupLoading(true);
-        setSignupMessage('');
+        setSignupMessage("");
         try {
-            const result = await signupForEvent(id, token);
-            setSignupMessage(result.message || 'Successfully signed up for the event!');
+            const res = await signupForEvent(id, token);
+            setSignupMessage(res.message || "Signed up successfully!");
         } catch (err) {
-            console.error("Signup failed:", err);
-            setSignupMessage(err.response?.data?.error || 'Failed to sign up. Please try again.');
+            console.error(err);
+            setSignupMessage(err.response?.data?.error || "Signup failed.");
         } finally {
             setSignupLoading(false);
         }
     };
 
     const handleAddToCalendar = async () => {
-        if (!token) {
-            setCalendarMessage("Please log in to add event to your calendar.");
-            return;
-        }
+        if (!token) return setCalendarMessage("Log in to use calendar.");
 
         setCalendarLoading(true);
         setCalendarMessage("");
-
         try {
-            const oauthResponse = await axios.get("http://localhost:5000/api/calendar/oauth", {
-                withCredentials: true,
+            const { data } = await axios.get("http://localhost:5000/api/calendar/oauth", {
                 headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true,
             });
 
-            const oauthUrl = oauthResponse.data.url;
-            if (!oauthUrl) throw new Error("No OAuth URL received");
+            const oauthUrl = data.url;
+            if (!oauthUrl) throw new Error("OAuth URL missing.");
 
-            const width = 500;
-            const height = 600;
+            const width = 500, height = 600;
             const left = window.screenX + (window.innerWidth - width) / 2;
             const top = window.screenY + (window.innerHeight - height) / 2;
 
             window.open(
                 oauthUrl,
                 "GoogleOAuth",
-                `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
+                `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars`
             );
-
-        } catch (error) {
-            console.error("Calendar add failed:", error);
-            setCalendarMessage("Failed to add event to calendar.");
+        } catch (err) {
+            console.error(err);
+            setCalendarMessage("OAuth failed.");
         } finally {
             setCalendarLoading(false);
         }
     };
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Something went wrong: {error.message}</p>;
+    if (error) return <p>Error: {error.message}</p>;
     if (!event) return <p>Event not found.</p>;
 
     return (
         <div className="card shadow-lg p-4 rounded-2xl max-w-xl mx-auto">
             <div className="w-full h-64 overflow-hidden rounded-xl mb-4">
                 <img
-                    src={event.images?.[4]?.url || event.images?.[0]?.url || ""}
-                    alt={event.name}
+                    src={event.images?.[4]?.url || event.images?.[0]?.url || event.image || ""}
+                    alt={event.name || event.title}
                     className="w-full h-full object-cover"
                 />
             </div>
-
-            <div className="card-body space-y-3">
-                <h2 className="text-2xl font-bold">{event.name}</h2>
-
+            <div className="space-y-3">
+                <h2 className="text-2xl font-bold">{event.name || event.title}</h2>
                 {event.classifications?.[0]?.genre?.name && (
-                    <p className="text-sm text-gray-600">
-                        <strong>Genre:</strong> {event.classifications[0].genre.name}
-                    </p>
+                    <p className="text-gray-600"><strong>Genre:</strong> {event.classifications[0].genre.name}</p>
                 )}
-
                 {event.dates?.start?.localDate && (
-                    <p className="text-sm text-gray-600">
-                        <strong>Date:</strong> {event.dates.start.localDate} at {event.dates.start.localTime}
-                    </p>
+                    <p className="text-gray-600"><strong>Date:</strong> {event.dates.start.localDate} at {event.dates.start.localTime}</p>
                 )}
-
                 {event.description && (
-                    <p className="text-base">
-                        <strong>Description:</strong><br />
-                        {event.description.split('\n').map((line, i) => (
-                            <span key={i}>
-                                {line}
-                                <br />
-                            </span>
-                        ))}
+                    <p><strong>Description:</strong><br />
+                        {event.description.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
                     </p>
                 )}
                 {event.url && (
-                    <p className="card-text">
-                        <strong>More Info:</strong>{' '}
-                        <a href={event.url} target="_blank" rel="noopener noreferrer">
-                            {event.url}
-                        </a>
-                    </p>
+                    <p><strong>More Info:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer">{event.url}</a></p>
                 )}
 
-                <div className="mt-3">
-                    {!token ? (
-                        <p className="text-danger">You need to log in to sign up for this event.</p>
+                <div className="mt-3 flex gap-2 flex-wrap">
+                    {token ? (
+                        <>
+                            <button className="btn btn-primary" onClick={handleSignUp} disabled={signupLoading}>
+                                {signupLoading ? "Signing up…" : "Sign Up"}
+                            </button>
+                            <button className="btn btn-success" onClick={handleAddToCalendar} disabled={calendarLoading}>
+                                {calendarLoading ? "Connecting…" : "Add to Calendar"}
+                            </button>
+                        </>
                     ) : (
-                        <div className="d-flex flex-wrap gap-2">
-                            <button
-                                className="btn btn-primary"
-                                onClick={handleSignUp}
-                                disabled={signupLoading}
-                            >
-                                {signupLoading ? 'Signing up…' : 'Sign Up'}
-                            </button>
-
-                            <button
-                                className="btn btn-success"
-                                onClick={handleAddToCalendar}
-                                disabled={calendarLoading}
-                            >
-                                {calendarLoading ? 'Connecting…' : 'Add to Calendar'}
-                            </button>
-                        </div>
+                        <p className="text-red-500">You must log in to sign up or add to calendar.</p>
                     )}
                 </div>
 
-                {signupMessage && <p className="text-success mt-3">{signupMessage}</p>}
-                {calendarMessage && <p className="text-info mt-2">{calendarMessage}</p>}
+                {signupMessage && <p className="text-green-600 mt-2">{signupMessage}</p>}
+                {calendarMessage && <p className="text-blue-500 mt-2">{calendarMessage}</p>}
             </div>
         </div>
     );
 };
 
 export default EventDetail;
+

@@ -6,13 +6,13 @@ dotenv.config();
 const eventSchema = new mongoose.Schema({
   externalId: {
     type: String,
+    trim: true,
     validate: {
       validator: function (v) {
-        // externalId required only for ticketmaster events
         if (this.source === "ticketmaster") {
-          return v != null && v.length > 0;
+          return v != null && v.trim().length > 0;
         }
-        return true; // no validation for manual events
+        return true;
       },
       message: "externalId is required for ticketmaster events",
     },
