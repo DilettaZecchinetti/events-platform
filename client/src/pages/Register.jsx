@@ -19,48 +19,52 @@ const Register = () => {
     };
 
     return (
-        <div className="register-container">
-            <h2>Register</h2>
+        <div className="card p-4 shadow-sm">
+            <h3 className="mb-3">Register</h3>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Name:
+                <div className="mb-3">
+                    <label className="form-label">Name</label>
                     <input
                         type="text"
+                        className="form-control"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Email:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Email</label>
                     <input
                         type="email"
+                        className="form-control"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Password:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Password</label>
                     <input
                         type="password"
+                        className="form-control"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Role:
-                    <select value={role} onChange={(e) => setRole(e.target.value)} required>
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Role</label>
+                    <select
+                        className="form-select"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        required
+                    >
                         <option value="user">User</option>
                         <option value="staff">Staff</option>
                     </select>
-                </label>
-                <br />
-                <button type="submit">Sign Up</button>
+                </div>
+                <button type="submit" className="btn btn-success w-100">Sign Up</button>
             </form>
         </div>
     );

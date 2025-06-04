@@ -9,19 +9,12 @@ const Login = () => {
     const { login } = useUser();
     const navigate = useNavigate();
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             const { user, token } = await loginUser(email, password);
-
-            if (!user || !token) {
-                throw new Error("Login failed: no user or token returned");
-            }
-
+            if (!user || !token) throw new Error("Login failed");
             login(user, token);
-
             alert("Login successful!");
             navigate("/");
         } catch (err) {
@@ -30,37 +23,34 @@ const Login = () => {
         }
     };
 
-
-
     return (
-        <div className="login-container">
-            <h2>Login</h2>
+        <div className="card p-4 shadow-sm">
+            <h3 className="mb-3">Login</h3>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Email:
+                <div className="mb-3">
+                    <label className="form-label">Email</label>
                     <input
                         type="email"
+                        className="form-control"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Password:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Password</label>
                     <input
                         type="password"
+                        className="form-control"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </label>
-                <br />
-                <button type="submit">Sign In</button>
+                </div>
+                <button type="submit" className="btn btn-primary w-100">Sign In</button>
             </form>
         </div>
     );
 };
 
 export default Login;
-

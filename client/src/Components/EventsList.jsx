@@ -37,6 +37,7 @@ const EventList = () => {
     };
 
     return (
+
         <div className="container my-4">
             <h2 className="mb-3">{user ? `Welcome, ${user.name ?? "User"}!` : "Not logged in"}</h2>
 
