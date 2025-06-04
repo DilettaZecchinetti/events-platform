@@ -22,7 +22,34 @@ function Header() {
                 </Link>
 
                 {/* Desktop Nav */}
+                {/* <nav className="d-none d-md-flex align-items-center gap-3">
+                    {user ? (
+                        <button onClick={handleLogout} className="btn btn-danger me-2">
+                            Log Out
+                        </button>
+                    ) : (
+                        <Link
+                            to="/"
+                            className="btn btn-success me-2"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Login/Register
+                        </Link>
+                    )}
+                    <span
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle border"
+                        style={{ width: "40px", height: "40px", fontSize: "20px" }}
+                    >
+                        👤
+                    </span>
+                </nav> */}
                 <nav className="d-none d-md-flex align-items-center gap-3">
+                    {user?.role === "user" && (
+                        <Link to="/staff-events" className="btn btn-outline-primary me-2">
+                            Staff Created Events
+                        </Link>
+                    )}
+
                     {user ? (
                         <button onClick={handleLogout} className="btn btn-danger me-2">
                             Log Out
@@ -44,6 +71,7 @@ function Header() {
                     </span>
                 </nav>
 
+
                 {/* Mobile Nav Toggle */}
                 <div className="d-flex d-md-none align-items-center gap-2">
                     <button
@@ -59,6 +87,35 @@ function Header() {
             {/* Mobile Dropdown */}
             {menuOpen && (
                 <div className="d-md-none bg-white border-top py-3 px-4">
+                    {/* {user ? (
+                        <button
+                            className="btn btn-danger w-100 mb-3"
+                            onClick={() => {
+                                handleLogout();
+                                setMenuOpen(false);
+                            }}
+                        >
+                            Log Out
+                        </button>
+                    ) : (
+                        <Link
+                            to="/"
+                            className="btn btn-success w-100 mb-3"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Login/Register
+                        </Link>
+                    )} */}
+                    {user?.role === "user" && (
+                        <Link
+                            to="/staff-events"
+                            className="btn btn-outline-primary w-100 mb-3"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Staff Created Events
+                        </Link>
+                    )}
+
                     {user ? (
                         <button
                             className="btn btn-danger w-100 mb-3"
@@ -78,6 +135,7 @@ function Header() {
                             Login/Register
                         </Link>
                     )}
+
                     <div className="d-flex align-items-center gap-3">
                         <span
                             className="d-inline-flex align-items-center justify-content-center rounded-circle border"

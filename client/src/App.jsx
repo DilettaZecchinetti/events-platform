@@ -21,7 +21,7 @@ function App() {
       {user?.role === "staff" && (
         <StaffDashboard />
       )}
-      <ManualEventList />
+
       <Routes>
         {user?.role === "user" ? (
           <Route path="/" element={<EventsList />} />

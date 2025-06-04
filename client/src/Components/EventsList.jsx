@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchEvents } from '../services/api';
+import { fetchEvents, getManualEvents } from '../services/api';
 import { useUser } from "../context/UserContext";
 import EventCard from "../Components/EventCard.jsx";
 import "../../css/EventCard.css";
@@ -38,7 +38,11 @@ const EventList = () => {
 
     return (
 
+
         <div className="container my-4">
+            <div>
+
+            </div>
             <h2 className="mb-3">{user ? `Welcome, ${user.name ?? "User"}!` : "Not logged in"}</h2>
 
             <form onSubmit={handleSearch} className="row g-3 mb-4 align-items-end">
@@ -81,7 +85,6 @@ const EventList = () => {
                 ))}
             </div>
 
-            <button>Continue</button>
         </div>
     );
 };
