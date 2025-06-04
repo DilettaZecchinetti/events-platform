@@ -18,9 +18,9 @@ function App() {
   return (
     <Router>
       <Header />
-      {user?.role === "staff" && (
+      {/* {user?.role === "staff" && (
         <StaffDashboard />
-      )}
+      )} */}
 
       <Routes>
         {user?.role === "user" ? (
@@ -31,8 +31,15 @@ function App() {
         <Route path="/staff-events" element={<ManualEventList />} />
         <Route
           path="/"
-          element={user?.role === "user" ? <EventsList /> : <AuthPage />}
+          element={
+            user?.role === "user"
+              ? <EventsList />
+              : user?.role === "staff"
+                ? <StaffDashboard />
+                : <AuthPage />
+          }
         />
+
       </Routes>
     </Router>
   )

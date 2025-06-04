@@ -32,21 +32,30 @@ const StaffDashboard = () => {
 
     const handleCreate = async () => {
         try {
-            const newEvent = await createEvent(
-                {
-                    ...formData,
-                    startDate: formData.startDateTime,
-                    endDate: formData.endDateTime,
-                },
-                token
-            );
+            const payload = {
+                ...formData,
+                startDate: formData.startDateTime,
+                endDate: formData.endDateTime,
+                externalId: "some-unique-id"
+            };
+
+            console.log("Creating event with payload:", payload);
+            console.log("Using token:", token);
+
+            const newEvent = await createEvent(payload, token);
+
             console.log("Created:", newEvent);
             resetForm();
             fetchEvents();
         } catch (err) {
-            console.error("Create error:", err.message);
+            if (err.response) {
+                console.error("Create error response:", err.response.data);
+            } else {
+                console.error("Create error:", err.message);
+            }
         }
     };
+
 
     const handleUpdate = async () => {
         try {
@@ -98,66 +107,106 @@ const StaffDashboard = () => {
     };
 
     return (
-        <div>
-            <h2>Staff Event Management</h2>
-            <div>
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-                <textarea
-                    placeholder="Description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-                <input
-                    type="datetime-local"
-                    value={formData.startDateTime}
-                    onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })}
-                />
-                <input
-                    type="datetime-local"
-                    value={formData.endDateTime}
-                    onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
-                />
-                <button onClick={eventIdToEdit ? handleUpdate : handleCreate}>
-                    {eventIdToEdit ? "Update Event" : "Create Event"}
-                </button>
-                {eventIdToEdit && (
-                    <button onClick={() => {
-                        resetForm();
-                        setEventIdToEdit(null);
-                    }}>
-                        Cancel Edit
+        <div className="container py-4">
+            <h2 className="mb-4">Staff Event Management</h2>
+
+            <div className="mb-5">
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Title"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <textarea
+                        className="form-control"
+                        placeholder="Description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <input
+                        type="datetime-local"
+                        className="form-control"
+                        value={formData.startDateTime}
+                        onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })}
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <input
+                        type="datetime-local"
+                        className="form-control"
+                        value={formData.endDateTime}
+                        onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
+                    />
+                </div>
+
+                <div className="d-flex gap-2">
+                    <button
+                        className="btn btn-primary"
+                        onClick={eventIdToEdit ? handleUpdate : handleCreate}
+                    >
+                        {eventIdToEdit ? "Update Event" : "Create Event"}
                     </button>
-                )}
+
+                    {eventIdToEdit && (
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => {
+                                resetForm();
+                                setEventIdToEdit(null);
+                            }}
+                        >
+                            Cancel Edit
+                        </button>
+                    )}
+                </div>
             </div>
 
             <hr />
 
-            <h3>Staff Events</h3>
+            <h3 className="mb-3">Staff Created Events</h3>
+
             {events.length === 0 ? (
-                <p>No events created yet.</p>
+                <p className="text-muted">No events created yet.</p>
             ) : (
-                <ul>
+                <ul className="list-group">
                     {events.map((event) => (
-                        <li key={event._id}>
-                            <strong>{event.title}</strong> - {event.description}
-                            <br />
-                            <em>
-                                {new Date(event.startDate).toLocaleString()} to {new Date(event.endDate).toLocaleString()}
-                            </em>
-                            <br />
-                            <button onClick={() => startEditing(event)}>Edit</button>
-                            <button onClick={() => handleDelete(event._id)}>Delete</button>
+                        <li key={event._id} className="list-group-item">
+                            <div className="fw-bold">{event.title}</div>
+                            <div>{event.description}</div>
+                            <div className="text-muted small">
+                                {new Date(event.startDate).toLocaleString()} –{" "}
+                                {new Date(event.endDate).toLocaleString()}
+                            </div>
+                            <div className="mt-2 d-flex gap-2">
+                                <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() => startEditing(event)}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(event._id)}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </li>
                     ))}
                 </ul>
             )}
         </div>
     );
+
 };
 
 export default StaffDashboard;
