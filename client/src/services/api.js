@@ -2,14 +2,17 @@ import axios from "axios";
 
 const API_BASE = "http://localhost:5000";
 
-export const fetchEvents = async () => {
+export const fetchEvents = async (keyword = "music", city = "") => {
   try {
-    const response = await axios.get(`${API_BASE}/api/events`);
-    console.log("API response:", response.data);
+    const params = {};
+    if (keyword) params.keyword = keyword;
+    if (city) params.city = city;
+
+    const response = await axios.get(`${API_BASE}/api/events`, { params });
     return response.data;
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    return [];
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    throw err;
   }
 };
 

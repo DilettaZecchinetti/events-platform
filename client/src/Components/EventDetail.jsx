@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
@@ -15,6 +16,8 @@ const EventDetail = () => {
     const [calendarMessage, setCalendarMessage] = useState('');
     const [calendarLoading, setCalendarLoading] = useState(false);
     const hasHandledOAuth = useRef(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadEvent = async () => {
@@ -175,52 +178,105 @@ const EventDetail = () => {
     if (!event) return <p>Event not found.</p>;
 
     return (
-        <div className="card shadow-lg p-4 rounded-2xl max-w-xl mx-auto">
-            <div className="w-full h-64 overflow-hidden rounded-xl mb-4">
-                <img
-                    src={event.images?.[4]?.url || event.images?.[0]?.url || event.image || ""}
-                    alt={event.name || event.title}
-                    className="w-full h-full object-cover"
-                />
-            </div>
-            <div className="space-y-3">
-                <h2 className="text-2xl font-bold">{event.name || event.title}</h2>
-                {event.classifications?.[0]?.genre?.name && (
-                    <p className="text-gray-600"><strong>Genre:</strong> {event.classifications[0].genre.name}</p>
-                )}
-                {event.dates?.start?.localDate && (
-                    <p className="text-gray-600"><strong>Date:</strong> {event.dates.start.localDate} at {event.dates.start.localTime}</p>
-                )}
-                {event.description && (
-                    <p><strong>Description:</strong><br />
-                        {event.description.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
-                    </p>
-                )}
-                {event.url && (
-                    <p><strong>More Info:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer">{event.url}</a></p>
-                )}
-
-                <div className="mt-3 flex gap-2 flex-wrap">
-                    {token ? (
-                        <>
-                            <button className="btn btn-primary" onClick={handleSignUp} disabled={signupLoading}>
-                                {signupLoading ? "Signing up…" : "Sign Up"}
-                            </button>
-                            <button className="btn btn-success" onClick={handleAddToCalendar} disabled={calendarLoading}>
-                                {calendarLoading ? "Connecting…" : "Add to Calendar"}
-                            </button>
-                        </>
-                    ) : (
-                        <p className="text-red-500">You must log in to sign up or add to calendar.</p>
-                    )}
+        <div className="container mt-5">
+            <div className="card shadow-lg mx-auto" style={{ maxWidth: '700px' }}>
+                <div className="ratio ratio-16x9">
+                    <img
+                        src={
+                            event.images?.[4]?.url ||
+                            event.images?.[0]?.url ||
+                            event.image ||
+                            ""
+                        }
+                        alt={event.name || event.title}
+                        className="object-fit-cover w-100 h-100"
+                    />
                 </div>
+                <div className="card-body">
+                    <h2 className="card-title">{event.name || event.title}</h2>
 
-                {signupMessage && <p className="text-green-600 mt-2">{signupMessage}</p>}
-                {calendarMessage && <p className="text-blue-500 mt-2">{calendarMessage}</p>}
+                    {event.classifications?.[0]?.genre?.name && (
+                        <p className="card-text text-muted">
+                            <strong>Genre:</strong> {event.classifications[0].genre.name}
+                        </p>
+                    )}
+
+                    {event.dates?.start?.localDate && (
+                        <p className="card-text text-muted">
+                            <strong>Date:</strong> {event.dates.start.localDate} at{" "}
+                            {event.dates.start.localTime}
+                        </p>
+                    )}
+
+                    {event.description && (
+                        <p className="card-text">
+                            <strong>Description:</strong>
+                            <br />
+                            {event.description.split("\n").map((line, i) => (
+                                <span key={i}>
+                                    {line}
+                                    <br />
+                                </span>
+                            ))}
+                        </p>
+                    )}
+
+                    {event.url && (
+                        <p className="card-text">
+                            <strong>More Info:</strong>{" "}
+                            <a
+                                href={event.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-decoration-underline"
+                            >
+                                {event.url}
+                            </a>
+                        </p>
+                    )}
+
+                    <div className="mt-4 d-flex flex-wrap gap-2">
+                        {token ? (
+                            <>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleSignUp}
+                                    disabled={signupLoading}
+                                >
+                                    {signupLoading ? "Signing up…" : "Sign Up"}
+                                </button>
+                                <button
+                                    className="btn btn-success"
+                                    onClick={handleAddToCalendar}
+                                    disabled={calendarLoading}
+                                >
+                                    {calendarLoading ? "Connecting…" : "Add to Calendar"}
+                                </button>
+                            </>
+                        ) : (
+                            <p className="text-danger">
+                                You must log in to sign up or add to calendar.
+                            </p>
+                        )}
+                    </div>
+
+                    {signupMessage && (
+                        <p className="text-success mt-3">{signupMessage}</p>
+                    )}
+                    {calendarMessage && (
+                        <p className="text-primary mt-2">{calendarMessage}</p>
+                    )}
+
+                    <div className="mt-4">
+                        <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
+                            ← Go Back
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
-};
+}
 
 export default EventDetail;
 

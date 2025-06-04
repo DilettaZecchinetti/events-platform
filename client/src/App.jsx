@@ -20,7 +20,9 @@ function App() {
         <StaffDashboard />
       )}
       <Routes>
-        <Route path="/" element={<EventsList />} />
+        {user?.role === "user" ? (
+          <Route path="/" element={<EventsList />} />
+        ) : null}
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

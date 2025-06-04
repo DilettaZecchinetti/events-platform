@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { useUser } from "../context/UserContext";
 import "../../css/Header.css";
 
 function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [theme, setTheme] = useState("light");
+    // const [theme, setTheme] = useState("light");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { user } = useUser();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -14,11 +16,11 @@ function Header() {
         setIsLoggedIn(!!token);
     }, []);
 
-    const toggleTheme = () => {
-        setTheme(prev => (prev === "dark" ? "light" : "dark"));
-        document.body.classList.toggle("bg-dark");
-        document.body.classList.toggle("text-white");
-    };
+    // const toggleTheme = () => {
+    //     setTheme(prev => (prev === "dark" ? "light" : "dark"));
+    //     document.body.classList.toggle("bg-dark");
+    //     document.body.classList.toggle("text-white");
+    // };
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -42,23 +44,23 @@ function Header() {
                     ) : (
                         <Link to="/login" className="btn btn-primary me-2">Sign In</Link>
                     )}
-                    <button onClick={toggleTheme} className="btn btn-outline-secondary me-2">
+                    {/* <button onClick={toggleTheme} className="btn btn-outline-secondary me-2">
                         {theme === "dark" ? "☀️" : "🌙"}
-                    </button>
-                    <img
-                        src="https://i.pravatar.cc/40"
-                        alt="avatar"
-                        className="rounded-circle"
-                        height="40"
-                        width="40"
-                    />
+                    </button> */}
+                    <span
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle border"
+                        style={{ width: "40px", height: "40px", fontSize: "20px" }}
+                    >
+                        👤
+                    </span>
+
                 </nav>
 
                 {/* Mobile Nav Toggle */}
                 <div className="d-flex d-md-none align-items-center gap-2">
-                    <button onClick={toggleTheme} className="btn btn-outline-secondary">
+                    {/* <button onClick={toggleTheme} className="btn btn-outline-secondary">
                         {theme === "dark" ? "☀️" : "🌙"}
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         className="btn btn-outline-secondary"
@@ -92,14 +94,13 @@ function Header() {
                         </Link>
                     )}
                     <div className="d-flex align-items-center gap-3">
-                        <img
-                            src="https://i.pravatar.cc/40"
-                            alt="avatar"
-                            className="rounded-circle"
-                            height="40"
-                            width="40"
-                        />
-                        <span className="text-muted">User</span>
+                        <span
+                            className="d-inline-flex align-items-center justify-content-center rounded-circle border"
+                            style={{ width: "40px", height: "40px", fontSize: "20px" }}
+                        >
+                            👤
+                        </span>
+                        <span className="text-muted">{user.name ?? "User"}</span>
                     </div>
                 </div>
             )}

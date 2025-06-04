@@ -19,7 +19,6 @@ export const getEventById = async (req, res) => {
 
   try {
     if (mongoose.Types.ObjectId.isValid(id)) {
-      // Fetch event from your DB
       const event = await Event.findById(id);
       if (!event) {
         return res.status(404).json({ error: "Event not found in database" });
