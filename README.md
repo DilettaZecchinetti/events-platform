@@ -85,20 +85,21 @@ Start the frontend app:
 npm run dev
 ```
 
-##🚀 Deployment
+## 🚀 Deployment
+
 Frontend: Hosted on Netlify
 
-Deployed from client/ folder
+- Deployed from client/ folder
 
-Connected to GitHub branch: main
+- Connected to GitHub branch: main
 
-Publish directory: client/dist
+- Publish directory: client/dist
 
-Build command: node index.js
+- Build command: node index.js
 
 Backend: Hosted on Render
 
-Web Service with npm start
+- Web Service started with npm start
 
-Environment variables added through the Render dashboard
+- Environment variables added via the Render dashboard
 
