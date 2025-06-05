@@ -40,4 +40,8 @@ cd events-platform
 cd backend
 npm install
 
+### 2. Set Up the Backend
 
+```bash
+cd backend
+npm install
