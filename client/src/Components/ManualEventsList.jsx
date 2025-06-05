@@ -12,11 +12,13 @@ const ManualEventList = () => {
     const [signupMessage, setSignupMessage] = useState('');
 
     const navigate = useNavigate();
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
+        console.log("Current token:", token);
         const fetchEvents = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/events/manual", {
+                const res = await axios.get(`${API_BASE}/api/events/manual`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setEvents(res.data);
@@ -59,7 +61,7 @@ const ManualEventList = () => {
 
         try {
             const res = await axios.post(
-                "http://localhost:5000/api/calendar/add-event",
+                `${API_BASE}/api/calendar/add-event`,
                 {
                     eventId,
                     summary: eventData.title,
@@ -76,7 +78,7 @@ const ManualEventList = () => {
             if (res.data.success) {
                 alert("Event successfully added to your Google Calendar!");
             } else if (res.data.requiresAuth) {
-                const oauthRes = await axios.get("http://localhost:5000/api/calendar/oauth", {
+                const oauthRes = await axios.get(`${API_BASE}/api/calendar/oauth`, {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true,
                 });
