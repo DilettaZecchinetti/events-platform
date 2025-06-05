@@ -35,14 +35,13 @@ This account has staff privileges and can access the staff dashboard to create e
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/events-platform.git
+git clone https://github.com/DilettaZecchinetti/events-platform
 cd events-platform
-cd backend
+cd server
 npm install
+```
 
----
+###2. Set Up the Backend
 
-2. Set Up the Backend
-
-cd backend
+cd server
 npm install
