@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://events-platform-t0w4.onrender.com",
+      "https://fluffy-chimera-82a586.netlify.app/",
     ],
     credentials: true,
   })
