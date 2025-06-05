@@ -18,3 +18,19 @@ A full-stack application that allows staff users to create and manage events, an
 ## 🧪 Test Account Access
 
 Use the following test credentials to log in as a staff user:
+Email: stafftester@esempio.com
+Password: ciao123
+
+
+This account has staff privileges and can access the staff dashboard to create events.
+
+---
+
+## 🛠️ Running the Project Locally
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/events-platform.git
+cd events-platform
+
