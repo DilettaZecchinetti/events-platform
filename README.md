@@ -99,9 +99,9 @@ Frontend: Hosted on Netlify
 
 Backend: Hosted on Render
 
-## ⚠️ Note: The backend may take 20–30 seconds to wake up on first use due to Render's free-tier cold start behavior.
-
 - Web Service started with npm start
 
 - Environment variables added via the Render dashboard
+
+## ⚠️ Note: The backend may take 20–30 seconds to wake up on first use due to Render's free-tier cold start behavior.
 
