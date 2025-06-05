@@ -33,4 +33,7 @@ This account has staff privileges and can access the staff dashboard to create e
 ```bash
 git clone https://github.com/your-username/events-platform.git
 cd events-platform
+cd backend
+npm install
+
 
