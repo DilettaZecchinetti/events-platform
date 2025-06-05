@@ -17,7 +17,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://events-platform-t0w4.onrender.com"],
+    origin: [
+      "http://localhost:5173",
+      "https://events-platform-t0w4.onrender.com",
+    ],
     credentials: true,
   })
 );
