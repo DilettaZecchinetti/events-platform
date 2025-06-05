@@ -41,7 +41,29 @@ cd server
 npm install
 ```
 
-###2. Set Up the Backend
+### 2. Set Up the Backend
 
+```bash
 cd server
 npm install
+
+Create a .env file inside the backend/ folder with the following contents:
+PORT=5000
+MONGO_URI=your_mongo_connection_string
+JWT_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+FRONTEND_URL=http://localhost:5174
+
+Start the backend server:
+npm run dev
+```
+
+### 3. Set Up the Frontend
+
+In a new terminal window:
+```bash
+cd client
+npm install
+```
+```
