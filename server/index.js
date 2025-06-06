@@ -17,10 +17,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://fluffy-chimera-82a586.netlify.app",
-    ],
+    origin: ["http://localhost:5173", "https://dz-events-platform.netlify.app"],
     credentials: true,
   })
 );
