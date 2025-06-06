@@ -210,7 +210,7 @@ export const updateEvent = async (req, res) => {
 const isManualEvent = (id) => /^[a-f\d]{24}$/i.test(id);
 
 export const signupForEvent = async (req, res) => {
-  const { eventId } = req.params;
+  const { eventId } = req.body;
   const userId = req.user._id;
 
   try {

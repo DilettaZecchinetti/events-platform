@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
+
 import { useUser } from "../context/UserContext.jsx";
 
 const EventDetail = () => {
@@ -127,20 +128,30 @@ const EventDetail = () => {
     };
 
     const handleSignUp = async () => {
-        if (!token) return setSignupMessage("Log in to sign up.");
-
         setSignupLoading(true);
-        setSignupMessage("");
+        setSignupMessage('');
+
+        const jwt = token;
+        const userId = getUserIdFromToken(jwt);
+
+        if (!jwt || !userId) {
+            setSignupMessage("You must be logged in.");
+            return;
+        }
+
         try {
-            const res = await signupForEvent(id, token);
-            setSignupMessage(res.message || "Signed up successfully!");
-        } catch (err) {
-            console.error(err);
-            setSignupMessage(err.response?.data?.error || "Signup failed.");
+            const response = await signupForEvent(id, jwt, userId);
+            setSignupMessage('Successfully signed up for the event!');
+            console.log('Signup successful:', response);
+        } catch (error) {
+            console.error('Signup error:', error);
+            setSignupMessage('Failed to sign up. Please try again.');
         } finally {
             setSignupLoading(false);
         }
     };
+
+
 
     const handleAddToCalendar = async () => {
         if (!token) return setCalendarMessage("Log in to use calendar.");

@@ -69,15 +69,18 @@ export const fetchCurrentUser = async () => {
   return response.data;
 };
 
-export const signupForEvent = async (eventId, token) => {
-  const response = await axios.post(
+export const signupForEvent = async (eventId, token, userId) => {
+  return axios.post(
     `${API_BASE}/api/events/${eventId}/signup`,
-    {},
+    { eventId, userId },
     {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
     }
   );
-  return response.data;
 };
 
 export const addEventToCalendar = (eventId, token) => {
