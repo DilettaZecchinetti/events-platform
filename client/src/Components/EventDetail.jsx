@@ -19,6 +19,7 @@ const EventDetail = () => {
     const hasHandledOAuth = useRef(false);
 
     const navigate = useNavigate();
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         const loadEvent = async () => {
@@ -37,7 +38,7 @@ const EventDetail = () => {
 
     useEffect(() => {
         const handleMessage = (e) => {
-            if (e.origin !== "http://localhost:5000") return;
+            if (e.origin !== `${API_BASE}`) return;
 
             if (e.data === 'oauth-success' && !hasHandledOAuth.current) {
                 hasHandledOAuth.current = true;
@@ -82,7 +83,7 @@ const EventDetail = () => {
             startDate: new Date(eventObj.startDate).toISOString(),
             endDate: new Date(eventObj.endDate).toISOString(),
         };
-        const res = await axios.post("http://localhost:5000/api/events", cleaned, {
+        const res = await axios.post(`${API_BASE}/api/events`, cleaned, {
             headers: {
                 Authorization: `Bearer ${jwt}`,
                 "Content-Type": "application/json",
@@ -159,7 +160,7 @@ const EventDetail = () => {
         setCalendarLoading(true);
         setCalendarMessage("");
         try {
-            const { data } = await axios.get("http://localhost:5000/api/calendar/oauth", {
+            const { data } = await axios.get(`${API_BASE}/api/calendar/oauth`, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             });
