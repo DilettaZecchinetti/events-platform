@@ -2,3 +2,8 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[build]
+  base = "client"
+  publish = "client/dist"
+  command = "npm run build"
