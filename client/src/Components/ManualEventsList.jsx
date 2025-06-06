@@ -115,8 +115,22 @@ const ManualEventList = () => {
                                 <h5 className="card-title">{event.title}</h5>
                                 <p className="card-text">{event.description}</p>
                                 <p className="card-subtitle mb-2 text-muted">
-                                    {new Date(event.startDate).toLocaleString()} –{" "}
-                                    {new Date(event.endDate).toLocaleString()}
+                                    {/* {new Date(event.startDate).toLocaleString()} –{" "}
+                                    {new Date(event.endDate).toLocaleString()} */}
+                                    {(() => {
+                                        const formatDateTime = (isoString) => {
+                                            const date = new Date(isoString);
+                                            const formattedDate = date.toLocaleDateString("en-GB").replaceAll("/", "-");
+                                            const formattedTime = date.toLocaleTimeString("en-US", {
+                                                hour: "numeric",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            });
+                                            return `${formattedDate} at ${formattedTime}`;
+                                        };
+
+                                        return `${formatDateTime(event.startDate)} – ${formatDateTime(event.endDate)}`;
+                                    })()}
                                 </p>
 
                                 <div className="mt-3 d-flex gap-2">

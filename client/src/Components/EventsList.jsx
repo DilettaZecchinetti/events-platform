@@ -10,7 +10,7 @@ const EventList = () => {
     const [error, setError] = useState(null);
     const { user } = useUser();
 
-    const [keyword, setKeyword] = useState("music");
+    const [keyword, setKeyword] = useState("");
     const [city, setCity] = useState("");
 
     const loadEvents = async () => {

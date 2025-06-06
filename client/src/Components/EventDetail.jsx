@@ -203,8 +203,17 @@ const EventDetail = () => {
 
                     {event.dates?.start?.localDate && (
                         <p className="card-text text-muted">
-                            <strong>Date:</strong> {event.dates.start.localDate} at{" "}
-                            {event.dates.start.localTime}
+                            <strong>Date:</strong>{" "}
+                            {(() => {
+                                const date = new Date(`${event.dates.start.localDate}T${event.dates.start.localTime}`);
+                                const formattedDate = date.toLocaleDateString("en-GB").replaceAll("/", "-");
+                                const formattedTime = date.toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                });
+                                return `${formattedDate} at ${formattedTime}`;
+                            })()}
                         </p>
                     )}
 
