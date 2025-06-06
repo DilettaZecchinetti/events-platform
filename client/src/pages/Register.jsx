@@ -12,7 +12,6 @@ const Register = () => {
         try {
             const data = await registerUser(name, email, password, role);
             alert("Registration successful!");
-            console.log("Registered user:", data);
         } catch (error) {
             alert("Registration failed. Please try again.");
         }

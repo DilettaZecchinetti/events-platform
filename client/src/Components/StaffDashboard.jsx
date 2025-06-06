@@ -39,12 +39,8 @@ const StaffDashboard = () => {
                 externalId: "some-unique-id"
             };
 
-            console.log("Creating event with payload:", payload);
-            console.log("Using token:", token);
-
             const newEvent = await createEvent(payload, token);
 
-            console.log("Created:", newEvent);
             resetForm();
             fetchEvents();
         } catch (err) {
@@ -68,7 +64,7 @@ const StaffDashboard = () => {
                 },
                 token
             );
-            console.log("Updated:", updated);
+
             resetForm();
             setEventIdToEdit(null);
             fetchEvents();
@@ -80,7 +76,7 @@ const StaffDashboard = () => {
     const handleDelete = async (id) => {
         try {
             await deleteEvent(id, token);
-            console.log("Deleted event:", id);
+
             fetchEvents();
         } catch (err) {
             console.error("Delete error:", err.message);

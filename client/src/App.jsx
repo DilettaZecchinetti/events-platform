@@ -18,9 +18,6 @@ function App() {
   return (
     <Router>
       <Header />
-      {/* {user?.role === "staff" && (
-        <StaffDashboard />
-      )} */}
 
       <Routes>
         {user?.role === "user" ? (

@@ -91,20 +91,15 @@ export const createEvent = async (req, res) => {
 };
 
 export const getUserEvents = async (req, res) => {
-  console.log("Authentication middleware hit");
-
   try {
     if (!req.user) {
-      console.log("No user found in request");
       return res.status(401).json({ message: "Unauthorized: No user info" });
     }
 
     const userId = req.user._id;
-    console.log("Fetching events for user:", userId);
 
     const events = await Event.find({ createdBy: userId }).exec();
 
-    console.log(`Found ${events.length} events for user ${userId}`);
     res.json(events);
   } catch (error) {
     console.error("Failed to fetch events:", error);
@@ -218,36 +213,17 @@ export const signupForEvent = async (req, res) => {
   const { eventId } = req.params;
   const userId = req.user._id;
 
-  console.log(
-    "signupForEvent called with eventId:",
-    eventId,
-    "userId:",
-    userId
-  );
-
   try {
     let event;
 
     if (isManualEvent(eventId)) {
-      console.log("Detected manual event signup");
-
       event = await Event.findById(eventId);
       if (!event) {
-        console.log("Manual event not found in DB:", eventId);
         return res.status(404).json({ error: "Manual event not found" });
       }
-
-      console.log("Manual event found:", event.title);
     } else {
-      console.log("Detected Ticketmaster event signup");
-
       event = await Event.findOne({ externalId: eventId });
       if (!event) {
-        console.log(
-          "Ticketmaster event not in DB, fetching from API:",
-          eventId
-        );
-
         const response = await axios.get(
           `https://app.ticketmaster.com/discovery/v2/events/${eventId}.json?apikey=${process.env.TICKETMASTER_API_KEY}`
         );
@@ -279,20 +255,12 @@ export const signupForEvent = async (req, res) => {
         });
 
         await event.save();
-        console.log("Ticketmaster event saved in DB:", event.title);
-      } else {
-        console.log("Ticketmaster event found in DB:", event.title);
       }
     }
 
     if (!event.attendees.includes(userId)) {
-      console.log(
-        `Adding user ${userId} to attendees for event ${event.title}`
-      );
       event.attendees.push(userId);
       await event.save();
-    } else {
-      console.log(`User ${userId} already signed up for event ${event.title}`);
     }
 
     res.status(200).json(event);

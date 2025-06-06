@@ -44,7 +44,6 @@ export const authenticateUser = async (req, res, next) => {
  * Middleware to check if user is authenticated
  */
 export const isAuthenticated = (req, res, next) => {
-  console.log("Authentication middleware hit");
   if (req.user) {
     return next();
   }

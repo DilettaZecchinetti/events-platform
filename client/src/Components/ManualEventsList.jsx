@@ -15,7 +15,6 @@ const ManualEventList = () => {
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
-        console.log("Current token:", token);
         const fetchEvents = async () => {
             try {
                 const res = await axios.get(`${API_BASE}/api/events/manual`, {
@@ -115,8 +114,6 @@ const ManualEventList = () => {
                                 <h5 className="card-title">{event.title}</h5>
                                 <p className="card-text">{event.description}</p>
                                 <p className="card-subtitle mb-2 text-muted">
-                                    {/* {new Date(event.startDate).toLocaleString()} –{" "}
-                                    {new Date(event.endDate).toLocaleString()} */}
                                     {(() => {
                                         const formatDateTime = (isoString) => {
                                             const date = new Date(isoString);

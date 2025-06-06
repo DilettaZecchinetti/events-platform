@@ -26,7 +26,6 @@ export const UserProvider = ({ children }) => {
       if (token) {
         try {
           const currentUser = await fetchCurrentUser();
-          console.log("Fetched user:", currentUser);
           setUser(currentUser);
         } catch (error) {
           console.error("Failed to fetch current user:", error);

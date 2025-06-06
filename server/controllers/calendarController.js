@@ -68,27 +68,19 @@ export const handleOAuthCallback = async (req, res) => {
 };
 
 export const addEventToCalendar = async (req, res) => {
-  console.log("req.user:", req.user);
-
   try {
-    console.log("addEventToCalendar called");
-    console.log("➡️ Request body:", req.body);
-
     const { eventId } = req.body;
 
     if (!eventId || typeof eventId !== "string") {
-      console.log("missing or invalid eventId");
       return res.status(400).json({ msg: "Missing or invalid eventId" });
     }
 
     if (!req.user) {
-      console.log("no user found in request");
       return res.status(401).json({ msg: "User not authenticated" });
     }
 
     const userTokens = req.user.googleTokens;
     if (!userTokens) {
-      console.log("Google tokens not found for user", req.user._id);
       return res.status(401).json({
         msg: "User has not authorized Google Calendar",
       });
@@ -98,21 +90,13 @@ export const addEventToCalendar = async (req, res) => {
 
     const event = await Event.findById(eventId).lean();
     if (!event) {
-      console.log("event not found in database:", eventId);
       return res.status(404).json({ msg: "Event not found in database" });
     }
-
-    console.log("event fetched from DB:", event);
-    console.log("event.date from DB:", event.date);
-    console.log("typeof event.date:", typeof event.date);
 
     const startDate = new Date(event.startDate);
     const endDate = event.endDate
       ? new Date(event.endDate)
       : new Date(startDate.getTime() + 60 * 60 * 1000);
-
-    console.log("Parsed startDate:", startDate);
-    console.log("Parsed endDate:", endDate);
 
     if (isNaN(startDate) || isNaN(endDate)) {
       return res.status(400).json({ msg: "Invalid event date(s)" });
@@ -137,8 +121,6 @@ export const addEventToCalendar = async (req, res) => {
       calendarId: "primary",
       resource: calendarEvent,
     });
-
-    console.log("Google Calendar event added:", response.data);
 
     return res.status(200).json({
       msg: "Event successfully added to Google Calendar",

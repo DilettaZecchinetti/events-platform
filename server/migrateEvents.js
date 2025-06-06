@@ -5,14 +5,10 @@ async function migrateEvents() {
       useUnifiedTopology: true,
     });
 
-    console.log("Connected to MongoDB");
-
     const eventsToUpdate = await Event.find({
       date: { $exists: true },
       startDate: { $exists: false },
     }).lean();
-
-    console.log(`Found ${eventsToUpdate.length} events to update`);
 
     for (const event of eventsToUpdate) {
       const startDate = new Date(event.date);
@@ -30,11 +26,7 @@ async function migrateEvents() {
           },
         }
       );
-
-      console.log(`Updated event ${event._id} with startDate and endDate`);
     }
-
-    console.log("Migration complete");
 
     mongoose.disconnect();
   } catch (err) {
