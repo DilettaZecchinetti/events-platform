@@ -207,7 +207,7 @@ const StaffDashboard = () => {
                         <li key={event._id} className="list-group-item">
                             <div className="fw-bold">{event.title}</div>
                             <div>{event.description}</div>
-                            <div>{event.location}</div>
+                            <div>📍 {event.location}</div>
                             <div className="text-muted small">
                                 {new Date(event.startDate).toLocaleString()} –{" "}
                                 {new Date(event.endDate).toLocaleString()}

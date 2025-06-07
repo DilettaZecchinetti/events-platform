@@ -145,6 +145,7 @@ const ManualEventList = () => {
                             <div className="card-body">
                                 <h5 className="card-title">{event.title}</h5>
                                 <p className="card-text">{event.description}</p>
+                                <p className="card-text">📍 {event.location}</p>
                                 <p className="card-subtitle mb-2 text-muted">
                                     {(() => {
                                         const formatDateTime = (isoString) => {
