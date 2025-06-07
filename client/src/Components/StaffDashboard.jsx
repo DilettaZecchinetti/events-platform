@@ -9,6 +9,7 @@ const StaffDashboard = () => {
         description: "",
         startDateTime: "",
         endDateTime: "",
+        location: "",
     });
     const [eventIdToEdit, setEventIdToEdit] = useState(null);
     const [events, setEvents] = useState([]);
@@ -40,7 +41,9 @@ const StaffDashboard = () => {
     const handleCreate = async () => {
         try {
             const payload = {
-                ...formData,
+                title: formData.title,
+                description: formData.description,
+                location: formData.location,
                 startDate: convertLocalDateTimeToISO(formData.startDateTime),
                 endDate: convertLocalDateTimeToISO(formData.endDateTime),
                 externalId: "some-unique-id"
@@ -59,12 +62,15 @@ const StaffDashboard = () => {
     };
 
 
+
     const handleUpdate = async () => {
         try {
             const updated = await updateEvent(
                 eventIdToEdit,
                 {
-                    ...formData,
+                    title: formData.title,
+                    description: formData.description,
+                    location: formData.location,
                     startDate: convertLocalDateTimeToISO(formData.startDateTime),
                     endDate: convertLocalDateTimeToISO(formData.endDateTime),
                 },
@@ -83,6 +89,7 @@ const StaffDashboard = () => {
         }
     };
 
+
     const handleDelete = async (id) => {
         try {
             await deleteEvent(id, token);
@@ -98,6 +105,7 @@ const StaffDashboard = () => {
         setFormData({
             title: event.title || "",
             description: event.description || "",
+            location: event.location || "",
             startDateTime: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
             endDateTime: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
         });
@@ -107,6 +115,7 @@ const StaffDashboard = () => {
         setFormData({
             title: "",
             description: "",
+            location: "",
             startDateTime: "",
             endDateTime: "",
         });
@@ -133,6 +142,16 @@ const StaffDashboard = () => {
                         placeholder="Description"
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Location"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     />
                 </div>
 
@@ -188,6 +207,7 @@ const StaffDashboard = () => {
                         <li key={event._id} className="list-group-item">
                             <div className="fw-bold">{event.title}</div>
                             <div>{event.description}</div>
+                            <div>{event.location}</div>
                             <div className="text-muted small">
                                 {new Date(event.startDate).toLocaleString()} –{" "}
                                 {new Date(event.endDate).toLocaleString()}
