@@ -67,7 +67,7 @@ const ManualEventList = () => {
         setCalendarError('');
 
         try {
-            console.log(`Sending add-event request for eventId: ${eventId}`);
+
 
             const res = await axios.post(
                 `${API_BASE}/api/calendar/add-event`,
@@ -84,8 +84,6 @@ const ManualEventList = () => {
                 }
             );
 
-            console.log("Response from add-event:", res.data);
-            console.log("Full response keys:", Object.keys(res.data));
 
             if (res.data.msg && res.data.msg.toLowerCase().includes("successfully added")) {
                 setCalendarMessage(res.data.msg);
@@ -101,7 +99,6 @@ const ManualEventList = () => {
             } else if (res.data.error) {
                 setCalendarError(res.data.error);
             } else {
-                console.log("Received unexpected response from add-event", res.data);
                 setCalendarError("Unexpected response from server.");
             }
         } catch (err) {

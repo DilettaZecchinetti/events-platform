@@ -16,9 +16,9 @@ function Header() {
 
     return (
         <header className="border-bottom bg-light">
-            <div className="container d-flex justify-content-between align-items-center py-3">
+            <div className="container d-flex justify-content-between align-items-center py-1">
                 <Link to="/" className="d-flex align-items-center text-decoration-none">
-                    <img src={logo} width={150} height={120} alt="Logo" />
+                    <img src={logo} width={120} height={100} alt="Logo" />
                 </Link>
 
                 {/* Desktop Nav */}

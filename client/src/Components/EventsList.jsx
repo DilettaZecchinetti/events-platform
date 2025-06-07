@@ -43,7 +43,7 @@ const EventList = () => {
             <div>
 
             </div>
-            <h2 className="mb-3">{user ? `Welcome, ${user.name ?? "User"}!` : "Not logged in"}</h2>
+            <h2 className="mb-5 mt-5">{user ? `Welcome, ${user.name ?? "User"}!` : "Not logged in"}</h2>
 
             <form onSubmit={handleSearch} className="row g-3 mb-4 align-items-end">
                 <div className="col-md-5">

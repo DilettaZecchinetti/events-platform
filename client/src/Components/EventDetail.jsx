@@ -143,9 +143,7 @@ const EventDetail = () => {
         try {
             const response = await signupForEvent(id, jwt, userId);
             setSignupMessage('Successfully signed up for the event!');
-            console.log('Signup successful:', response);
         } catch (error) {
-            console.error('Signup error:', error);
             setSignupMessage('Failed to sign up. Please try again.');
         } finally {
             setSignupLoading(false);
