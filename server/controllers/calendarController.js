@@ -5,10 +5,12 @@ import User from "../models/User.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:5000/api/calendar/auth/google/callback"
+  redirectUri
 );
 
 export const initiateOAuth = (req, res) => {
@@ -50,11 +52,13 @@ export const handleOAuthCallback = async (req, res) => {
       googleTokens: tokens,
     });
 
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
     return res.send(`
       <html>
         <body>
           <script>
-            window.opener.postMessage('oauth-success','http://localhost:5173');
+            window.opener.postMessage('oauth-success', '${frontendUrl}');
             window.close();
           </script>
           <p>Google Calendar connected successfully! You can close this window.</p>
