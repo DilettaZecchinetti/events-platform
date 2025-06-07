@@ -30,17 +30,23 @@ const StaffDashboard = () => {
         if (token) fetchEvents();
     }, [token]);
 
+    const convertLocalDateTimeToISO = (localDateTime) => {
+        if (!localDateTime) return null;
+        const date = new Date(localDateTime);
+        return date.toISOString();
+    };
+
+
     const handleCreate = async () => {
         try {
             const payload = {
                 ...formData,
-                startDate: formData.startDateTime,
-                endDate: formData.endDateTime,
+                startDate: convertLocalDateTimeToISO(formData.startDateTime),
+                endDate: convertLocalDateTimeToISO(formData.endDateTime),
                 externalId: "some-unique-id"
             };
 
             const newEvent = await createEvent(payload, token);
-
             resetForm();
             fetchEvents();
         } catch (err) {
@@ -59,8 +65,8 @@ const StaffDashboard = () => {
                 eventIdToEdit,
                 {
                     ...formData,
-                    startDate: formData.startDateTime,
-                    endDate: formData.endDateTime,
+                    startDate: convertLocalDateTimeToISO(formData.startDateTime),
+                    endDate: convertLocalDateTimeToISO(formData.endDateTime),
                 },
                 token
             );
@@ -69,7 +75,11 @@ const StaffDashboard = () => {
             setEventIdToEdit(null);
             fetchEvents();
         } catch (err) {
-            console.error("Update error:", err.message);
+            if (err.response) {
+                console.error("Update error response:", err.response.data);
+            } else {
+                console.error("Update error:", err.message);
+            }
         }
     };
 

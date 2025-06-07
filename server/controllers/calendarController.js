@@ -107,11 +107,11 @@ export const addEventToCalendar = async (req, res) => {
       description: event.description || "",
       start: {
         dateTime: startDate.toISOString(),
-        timeZone: "UTC",
+        timeZone: "Europe/London",
       },
       end: {
         dateTime: endDate.toISOString(),
-        timeZone: "UTC",
+        timeZone: "Europe/London",
       },
       location: event.location?.venue || "",
     };
