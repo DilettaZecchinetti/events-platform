@@ -58,10 +58,16 @@ export const handleOAuthCallback = async (req, res) => {
       <html>
         <body>
           <script>
-            window.opener.postMessage('oauth-success', '${frontendUrl}');
-            window.close();
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    
+            if (isMobile) {
+              document.write("<p>🎉 Google Calendar connected! You can close this tab.</p>");
+              setTimeout(() => window.close(), 3000);
+            } else {
+              window.opener.postMessage('oauth-success', "${frontendUrl}");
+              window.close();
+            }
           </script>
-          <p>Google Calendar connected successfully! You can close this window.</p>
         </body>
       </html>
     `);
