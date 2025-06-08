@@ -2,8 +2,11 @@
 
 A full-stack application that allows staff users to create and manage events, and regular users to sign up and sync them to Google Calendar. The platform uses Clerk for authentication and integrates the Ticketmaster API to fetch live events.
 
+---
+
 ## 🔗 Live Demo
 👉 Check out the live app: https://dz-events-platform.netlify.app/
+ Note: The backend may take up to 50 seconds to wake up on first use due to Render's free-tier cold start behavior.
 
 ---
 
@@ -105,6 +108,3 @@ Backend: Hosted on Render
 - Web Service started with npm start
 
 - Environment variables added via the Render dashboard
-
-## ⚠️ Note: The backend may take up to 50 seconds to wake up on first use due to Render's free-tier cold start behavior.
-
