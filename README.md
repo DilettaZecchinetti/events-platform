@@ -5,7 +5,8 @@ A full-stack application that allows staff users to create and manage events, an
 ---
 
 ## 🔗 Live Demo
-👉 Check out the live app: https://dz-events-platform.netlify.app/
+👉 Check out the live app: https://dz-events-platform.netlify.app/ 
+
  Note: The backend may take up to 50 seconds to wake up on first use due to Render's free-tier cold start behavior.
 
 ---
