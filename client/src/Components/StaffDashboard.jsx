@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createEvent, updateEvent, deleteEvent, getManualEvents } from "../services/api";
 import { useUser } from "../context/UserContext";
+import { v4 as uuidv4 } from 'uuid';
 
 const StaffDashboard = () => {
     const { token } = useUser();
@@ -20,12 +21,14 @@ const StaffDashboard = () => {
             const normalizedEvents = Array.isArray(userEvents)
                 ? userEvents.map(event => ({ ...event, _id: event._id }))
                 : [];
-
             setEvents(normalizedEvents);
+            return normalizedEvents;
         } catch (err) {
             console.error("Failed to fetch events:", err.message);
+            return [];
         }
     };
+
 
     useEffect(() => {
         if (token) fetchEvents();
@@ -37,7 +40,6 @@ const StaffDashboard = () => {
         return date.toISOString();
     };
 
-
     const handleCreate = async () => {
         try {
             const payload = {
@@ -46,12 +48,14 @@ const StaffDashboard = () => {
                 location: formData.location,
                 startDate: convertLocalDateTimeToISO(formData.startDateTime),
                 endDate: convertLocalDateTimeToISO(formData.endDateTime),
-                externalId: "some-unique-id"
+                externalId: uuidv4(), // <-- Generates a unique ID every time
             };
 
-            const newEvent = await createEvent(payload, token);
+            const createdEvent = await createEvent(payload, token);
+
+            const newEvents = await fetchEvents();
+
             resetForm();
-            fetchEvents();
         } catch (err) {
             if (err.response) {
                 console.error("Create error response:", err.response.data);
@@ -60,7 +64,6 @@ const StaffDashboard = () => {
             }
         }
     };
-
 
 
     const handleUpdate = async () => {
