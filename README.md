@@ -103,5 +103,5 @@ Backend: Hosted on Render
 
 - Environment variables added via the Render dashboard
 
-## ⚠️ Note: The backend may take 20–30 seconds to wake up on first use due to Render's free-tier cold start behavior.
+## ⚠️ Note: The backend may take up to 50 seconds to wake up on first use due to Render's free-tier cold start behavior.
 
