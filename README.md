@@ -109,3 +109,33 @@ Backend: Hosted on Render
 - Web Service started with npm start
 
 - Environment variables added via the Render dashboard
+
+
+## 🧪 Environment Variables
+
+Make sure to create a `.env` file in both the `client/` and `server/` directories with the following variables:
+
+### Server (.env)
+TICKETMASTER_API_KEY=
+
+MONGO_URI=
+
+GOOGLE_CLIENT_ID=
+
+GOOGLE_CLIENT_SECRET=
+
+GOOGLE_REDIRECT_URI=
+
+SESSION_SECRET=
+
+JWT_SECRET=
+
+PORT=
+
+
+### Client (.env)
+VITE_API_BASE_URL=
+
+
+> ⚠️ Do **not** commit `.env` files to version control. Add `.env` to your `.gitignore` file.
+
