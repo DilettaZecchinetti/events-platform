@@ -2,6 +2,9 @@
 
 A full-stack application that allows staff users to create and manage events, and regular users to sign up and sync them to Google Calendar. The platform uses Clerk for authentication and integrates the Ticketmaster API to fetch live events.
 
+## 🔗 Live Demo
+👉 Check out the live app: https://dz-events-platform.netlify.app/
+
 ---
 
 ## 🚀 Features
