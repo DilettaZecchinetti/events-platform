@@ -25,7 +25,7 @@ A full-stack web application that allows staff users to create and manage events
 ## 🧪 Test Account Access
 
 Use the following test credentials to log in as a user: 
-Email: tester@esempio.com
+Email: test@esempio.com
 Password: ciao123 
 
 Use the following test credentials to log in as a staff user:
