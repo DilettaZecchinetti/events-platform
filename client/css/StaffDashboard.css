@@ -56,7 +56,7 @@
   
   .btn-icon:hover,
   .btn-icon:focus {
-    color: #0d6efd; /* Bootstrap primary blue */
+    color: #0d6efd; 
     outline: none;
     background-color: rgba(13, 110, 253, 0.1);
   }
@@ -114,8 +114,7 @@
     outline: none;
   }
   
-  /* Labels */
-  form label {
+   form label {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;

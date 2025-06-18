@@ -7,9 +7,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import EventDetail from './Components/EventDetail'
 import StaffDashboard from './Components/StaffDashboard';
-import StaffEventManagement from './Components/StaffEventManagement';
 import ManualEventList from './Components/ManualEventsList';
-import StaffPage from './Components/StaffPage'
 import { useUser } from "./context/UserContext";
 
 
@@ -38,7 +36,6 @@ function App() {
           }
         />
         <Route path='/register' element={<Register />} />
-        {/* <Route path='/manage' element={<StaffEventManagement />} /> */}
 
       </Routes>
     </Router>
