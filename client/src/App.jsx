@@ -3,12 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import EventsList from "./Components/EventsList"
 import './App.css'
 import Header from './Components/Header'
-// import Login from './pages/Login'
-// import Register from './pages/Register'
+import Login from './pages/Login'
+import Register from './pages/Register'
 import EventDetail from './Components/EventDetail'
 import StaffDashboard from './Components/StaffDashboard';
 import ManualEventList from './Components/ManualEventsList';
-import AuthPage from './pages/AuthPage';
 import { useUser } from "./context/UserContext";
 
 
@@ -33,9 +32,10 @@ function App() {
               ? <EventsList />
               : user?.role === "staff"
                 ? <StaffDashboard />
-                : <AuthPage />
+                : <Login />
           }
         />
+        <Route path='/register' element={<Register />} />
 
       </Routes>
     </Router>
