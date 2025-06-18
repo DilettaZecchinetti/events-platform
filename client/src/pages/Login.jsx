@@ -38,7 +38,7 @@ const Login = () => {
                     Loading...
                 </div>
             ) : (
-                <div className="card p-4 shadow-sm" style={{ width: '100%', maxWidth: '400px' }}>
+                <div>
                     <h3 className="mb-3 text-center">Login</h3>
                     {error && <div className="alert alert-danger text-center">{error}</div>}
                     <form onSubmit={handleSubmit}>

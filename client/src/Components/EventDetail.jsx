@@ -16,6 +16,7 @@ const EventDetail = () => {
     const [signupLoading, setSignupLoading] = useState(false);
     const [calendarMessage, setCalendarMessage] = useState('');
     const [calendarLoading, setCalendarLoading] = useState(false);
+    const [eventMessage, setEventMessage] = useState('');
     const hasHandledOAuth = useRef(false);
 
     const navigate = useNavigate();
@@ -52,7 +53,8 @@ const EventDetail = () => {
                         attempts++;
                     }
                     if (event) addEvent();
-                    else alert("Event still not loaded after OAuth.");
+                    else setEventMessage("Event still not loaded after OAuth.");
+
                 };
 
                 waitForEventThenAdd();
@@ -96,10 +98,16 @@ const EventDetail = () => {
     };
 
     const addEvent = async () => {
-        if (!event) return alert("Event data missing.");
+        if (!event) {
+            setEventMessage("Event data missing.");
+            return;
+        }
         const jwt = localStorage.getItem("token");
         const userId = getUserIdFromToken(jwt);
-        if (!userId) return alert("You must be logged in.");
+        if (!userId) {
+            setEventMessage("You must be logged in.");
+            return;
+        }
 
         try {
             const start = event.startDate || event.dates?.start?.dateTime;
@@ -123,10 +131,10 @@ const EventDetail = () => {
 
             const saved = await saveEventToDB(eventToSave, jwt);
             await addEventToCalendar(saved._id, jwt);
-            alert("Event added to calendar!");
+            setEventMessage("Event added to calendar!");
         } catch (err) {
             console.error(err);
-            alert("Failed to add to calendar.");
+            setEventMessage("Failed to add to calendar.");
         }
     };
 
@@ -287,11 +295,16 @@ const EventDetail = () => {
                     {calendarMessage && (
                         <p className="text-primary mt-2">{calendarMessage}</p>
                     )}
+                    {eventMessage && (
+                        <p className="text-warning mt-3">{eventMessage}</p>
+                    )}
 
                     <div className="mt-4">
                         <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                             ← Go Back
                         </button>
+
+
                     </div>
                 </div>
             </div>

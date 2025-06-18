@@ -15,7 +15,6 @@ const Register = () => {
         setError("");
         try {
             await registerUser(name, email, password, role);
-            // optionally reset form or navigate
             setLoading(false);
         } catch (err) {
             setError("Registration failed. Please try again.");
@@ -30,7 +29,7 @@ const Register = () => {
                     Loading...
                 </div>
             ) : (
-                <div className="card p-4 shadow-sm" style={{ width: '100%', maxWidth: '400px' }}>
+                <div>
                     <h3 className="mb-3 text-center">Register</h3>
                     {error && <div className="alert alert-danger text-center">{error}</div>}
                     <form onSubmit={handleSubmit}>
