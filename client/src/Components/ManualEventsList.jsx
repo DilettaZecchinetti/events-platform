@@ -5,14 +5,13 @@ import { signupForEvent } from "../services/api.js";
 import { useNavigate } from "react-router-dom";
 
 const ManualEventList = () => {
-    const { token } = useUser();
+    const { user } = useUser(); // still using this to check if logged in
     const [events, setEvents] = useState([]);
     const [signupLoading, setSignupLoading] = useState({});
     const [calendarLoading, setCalendarLoading] = useState({});
     const [signupMessage, setSignupMessage] = useState('');
     const [calendarMessage, setCalendarMessage] = useState('');
     const [calendarError, setCalendarError] = useState('');
-
 
     const navigate = useNavigate();
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -21,11 +20,10 @@ const ManualEventList = () => {
         const fetchEvents = async () => {
             try {
                 const res = await axios.get(`${API_BASE}/api/events/manual`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
                 });
 
                 const manualEvents = res.data.filter(event => event.source === "manual");
-
                 setEvents(manualEvents);
             } catch (err) {
                 console.error("Error fetching manual events:", err);
@@ -33,10 +31,10 @@ const ManualEventList = () => {
         };
 
         fetchEvents();
-    }, [token]);
+    }, []);
 
     const handleSignUp = async (eventId) => {
-        if (!token) {
+        if (!user) {
             setSignupMessage("You need to log in to sign up for this event.");
             return;
         }
@@ -45,7 +43,7 @@ const ManualEventList = () => {
         setSignupMessage("");
 
         try {
-            const result = await signupForEvent(eventId, token);
+            const result = await signupForEvent(eventId);
             setSignupMessage(result.message || "Successfully signed up for the event!");
         } catch (err) {
             console.error("Signup failed:", err);
@@ -56,7 +54,7 @@ const ManualEventList = () => {
     };
 
     const handleAddToCalendar = async (eventData) => {
-        if (!token) {
+        if (!user) {
             setCalendarError("You need to log in to add this event to your calendar.");
             return;
         }
@@ -67,8 +65,6 @@ const ManualEventList = () => {
         setCalendarError('');
 
         try {
-
-
             const res = await axios.post(
                 `${API_BASE}/api/calendar/add-event`,
                 {
@@ -79,17 +75,14 @@ const ManualEventList = () => {
                     endDate: eventData.endDate,
                 },
                 {
-                    headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true,
                 }
             );
-
 
             if (res.data.msg && res.data.msg.toLowerCase().includes("successfully added")) {
                 setCalendarMessage(res.data.msg);
             } else if (res.data.requiresAuth === true) {
                 const oauthRes = await axios.get(`${API_BASE}/api/calendar/oauth`, {
-                    headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true,
                 });
 
@@ -110,7 +103,6 @@ const ManualEventList = () => {
         }
     };
 
-
     return (
         <div className="container my-4">
             <h2 className="h4 mb-4">Staff Curated Events</h2>
@@ -125,13 +117,11 @@ const ManualEventList = () => {
                     {calendarMessage}
                 </div>
             )}
-
             {calendarError && (
                 <div className="alert alert-danger" role="alert">
                     {calendarError}
                 </div>
             )}
-
 
             {events.length === 0 ? (
                 <p>No manual events available.</p>
@@ -189,7 +179,6 @@ const ManualEventList = () => {
             </div>
         </div>
     );
-
 };
 
 export default ManualEventList;

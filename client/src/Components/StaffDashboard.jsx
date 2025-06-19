@@ -23,20 +23,32 @@ const StaffDashboard = () => {
     const fetchEvents = async () => {
         try {
             const userEvents = await getManualEvents();
+            console.log("Fetched events:", userEvents);
             const normalizedEvents = Array.isArray(userEvents)
                 ? userEvents.map((event) => ({ ...event, _id: event._id }))
                 : [];
             setEvents(normalizedEvents);
             return normalizedEvents;
         } catch (err) {
-            console.error("Failed to fetch events:", err.message);
+            console.error("Failed to fetch events:", err.response?.data || err.message);
             return [];
         }
     };
 
     useEffect(() => {
-        if (token) fetchEvents();
-    }, [token]);
+        const fetchEvents = async () => {
+            try {
+                const userEvents = await getManualEvents();
+                console.log("Fetched events:", userEvents);
+                setEvents(userEvents);
+            } catch (err) {
+                console.error("Error fetching events:", err);
+            }
+        };
+
+        fetchEvents();
+    }, []);
+
 
     const convertLocalDateTimeToISO = (localDateTime) => {
         if (!localDateTime) return null;
@@ -61,32 +73,36 @@ const StaffDashboard = () => {
 
 
     const handleCreate = async () => {
+        console.log("handleCreate called");
+
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
             setError("End date/time must be after start date/time.");
             return;
         }
 
         try {
-            const payload = {
+            await createEvent({
                 title: formData.title,
                 description: formData.description,
                 location: formData.location,
                 startDate: convertLocalDateTimeToISO(formData.startDateTime),
                 endDate: convertLocalDateTimeToISO(formData.endDateTime),
-                externalId: uuidv4(),
-            };
+            });
 
-            await createEvent(payload, token);
+            console.log("Event creation complete");
 
-            await fetchEvents();
             resetForm();
             setShowForm(false);
-            setError(""); // clear error on success
+            setError("");
+            fetchEvents();
         } catch (err) {
-            setError("Failed to create event. Please try again.");
             console.error("Create error:", err.message);
+            setError("Failed to create event. Please try again.");
         }
     };
+
+
+
 
     const handleUpdate = async () => {
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
@@ -138,7 +154,10 @@ const StaffDashboard = () => {
             endDateTime: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
         });
         setShowForm(true);
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
 
     const handleCancel = () => {
         resetForm();
@@ -307,11 +326,13 @@ const StaffDashboard = () => {
                             </div>
                             <p className="event-description">{event.description}</p>
                             <p className="event-location">
-                                <span role="img" aria-label="location pin">
-                                    📍
-                                </span>{" "}
-                                {event.location}
+                                📍{" "}
+                                {typeof event.location === "string"
+                                    ? event.location
+                                    : `${event.location?.venue || ""}, ${event.location?.city || ""}`}
                             </p>
+
+
                             <p className="event-datetime">
                                 <span role="img" aria-label="calendar">
                                     📅

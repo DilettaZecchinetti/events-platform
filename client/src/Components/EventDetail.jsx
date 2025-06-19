@@ -7,7 +7,7 @@ import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services
 import { useUser } from "../context/UserContext.jsx";
 
 const EventDetail = () => {
-    const { token } = useUser();
+    const { user } = useUser();
     const { id } = useParams();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,8 +21,6 @@ const EventDetail = () => {
 
     const navigate = useNavigate();
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
-    console.log('API_BASE_URL:', API_BASE);
-
 
     useEffect(() => {
         const loadEvent = async () => {
@@ -41,7 +39,7 @@ const EventDetail = () => {
 
     useEffect(() => {
         const handleMessage = (e) => {
-            if (e.origin !== `${API_BASE}`) return;
+            if (e.origin !== API_BASE) return;
 
             if (e.data === 'oauth-success' && !hasHandledOAuth.current) {
                 hasHandledOAuth.current = true;
@@ -54,7 +52,6 @@ const EventDetail = () => {
                     }
                     if (event) addEvent();
                     else setEventMessage("Event still not loaded after OAuth.");
-
                 };
 
                 waitForEventThenAdd();
@@ -65,34 +62,17 @@ const EventDetail = () => {
         return () => window.removeEventListener('message', handleMessage);
     }, [event]);
 
-    const getUserIdFromToken = (jwt) => {
-        try {
-            const base64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(
-                atob(base64)
-                    .split('')
-                    .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-                    .join('')
-            );
-            const decoded = JSON.parse(jsonPayload);
-            return decoded.id || decoded._id || decoded.sub || null;
-        } catch {
-            return null;
-        }
-    };
-
-    const saveEventToDB = async (eventObj, jwt) => {
+    const saveEventToDB = async (eventObj) => {
         const cleaned = {
             ...eventObj,
             startDate: new Date(eventObj.startDate).toISOString(),
             endDate: new Date(eventObj.endDate).toISOString(),
         };
         const res = await axios.post(`${API_BASE}/api/events`, cleaned, {
-            headers: {
-                Authorization: `Bearer ${jwt}`,
-                "Content-Type": "application/json",
-            },
             withCredentials: true,
+            headers: {
+                "Content-Type": "application/json"
+            }
         });
         return res.data;
     };
@@ -102,9 +82,8 @@ const EventDetail = () => {
             setEventMessage("Event data missing.");
             return;
         }
-        const jwt = localStorage.getItem("token");
-        const userId = getUserIdFromToken(jwt);
-        if (!userId) {
+
+        if (!user || !user._id) {
             setEventMessage("You must be logged in.");
             return;
         }
@@ -124,13 +103,13 @@ const EventDetail = () => {
                     city: event.city || event._embedded?.venues?.[0]?.city?.name || "",
                 },
                 image: event.image || event.images?.[0]?.url || "",
-                createdBy: userId,
+                createdBy: user._id,
                 url: event.url || "",
                 attendees: [],
             };
 
-            const saved = await saveEventToDB(eventToSave, jwt);
-            await addEventToCalendar(saved._id, jwt);
+            const saved = await saveEventToDB(eventToSave);
+            await addEventToCalendar(saved._id);
             setEventMessage("Event added to calendar!");
         } catch (err) {
             console.error(err);
@@ -142,16 +121,14 @@ const EventDetail = () => {
         setSignupLoading(true);
         setSignupMessage('');
 
-        const jwt = token;
-        const userId = getUserIdFromToken(jwt);
-
-        if (!jwt || !userId) {
+        if (!user || !user._id) {
             setSignupMessage("You must be logged in.");
+            setSignupLoading(false);
             return;
         }
 
         try {
-            const response = await signupForEvent(id, jwt, userId);
+            await signupForEvent(id, user._id);
             setSignupMessage('Successfully signed up for the event!');
         } catch (error) {
             setSignupMessage('Failed to sign up. Please try again.');
@@ -160,16 +137,13 @@ const EventDetail = () => {
         }
     };
 
-
-
     const handleAddToCalendar = async () => {
-        if (!token) return setCalendarMessage("Log in to use calendar.");
+        if (!user) return setCalendarMessage("Log in to use calendar.");
 
         setCalendarLoading(true);
         setCalendarMessage("");
         try {
             const { data } = await axios.get(`${API_BASE}/api/calendar/oauth`, {
-                headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             });
 
@@ -265,7 +239,7 @@ const EventDetail = () => {
                     )}
 
                     <div className="mt-4 d-flex flex-wrap gap-2">
-                        {token ? (
+                        {user ? (
                             <>
                                 <button
                                     className="btn btn-primary"
@@ -287,6 +261,7 @@ const EventDetail = () => {
                                 You must log in to sign up or add to calendar.
                             </p>
                         )}
+
                     </div>
 
                     {signupMessage && (

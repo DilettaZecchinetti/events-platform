@@ -49,7 +49,7 @@ const EventList = () => {
                 maxWidth: '1500px',
                 boxShadow: 'none',
                 borderRadius: '0',
-                background: 'none', // optional: removes background if it's white or grey
+                background: 'none',
             }}>
                 <div className="col-md-5" >
                     <input

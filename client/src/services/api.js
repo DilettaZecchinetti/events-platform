@@ -27,13 +27,13 @@ export const fetchEventsById = async (id) => {
 
 export const registerUser = async (name, email, password, role) => {
   try {
-    const response = await axios.post(`${API_BASE}/api/auth/signup`, {
-      name,
-      email,
-      password,
-      role,
-    });
-    return response.data;
+    const response = await axios.post(
+      `${API_BASE}/api/auth/signup`,
+      { name, email, password, role },
+      { withCredentials: true }
+    );
+
+    return response.data.user;
   } catch (error) {
     console.error("Error registering user:", error);
     throw error;
@@ -42,84 +42,84 @@ export const registerUser = async (name, email, password, role) => {
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await axios.post(`${API_BASE}/api/auth/login`, {
-      email,
-      password,
-    });
-    const { token, user } = response.data;
+    const response = await axios.post(
+      "/api/auth/login",
+      { email, password },
+      { withCredentials: true }
+    );
 
-    localStorage.setItem("token", token);
-
-    return { user, token };
-  } catch (error) {
-    console.error("Login failed:", error);
-    throw error;
+    const { user } = response.data;
+    return user;
+  } catch (err) {
+    console.error("Login error:", err);
+    throw err;
   }
 };
 
 export const fetchCurrentUser = async () => {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
+  try {
+    const res = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+    });
 
-  const response = await axios.get(`${API_BASE}/api/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("fetchCurrentUser error response:", res.status, errorText);
+      throw new Error("Not authenticated");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("fetchCurrentUser fetch error:", error);
+    throw error;
+  }
 };
 
-export const signupForEvent = async (eventId, token, userId) => {
+export const signupForEvent = async (eventId, userId) => {
   return axios.post(
     `${API_BASE}/api/events/${eventId}/signup`,
     { eventId, userId },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    }
+    { withCredentials: true }
   );
 };
 
-export const addEventToCalendar = (eventId, token) => {
+export const addEventToCalendar = async (eventId) => {
   return axios.post(
     `${API_BASE}/api/calendar/add-event`,
     { eventId },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      withCredentials: true,
-    }
+    { withCredentials: true }
   );
 };
 
-export const createEvent = async (data, token) => {
+export const createEvent = async (eventData) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE}/api/staff/events/`,
+      eventData,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Create error:", err);
+    throw err;
+  }
+};
+
+export const updateEvent = async (id, data) => {
   return axios
-    .post(`${API_BASE}/api/events`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    .put(`${API_BASE}/api/staff/events/${id}`, data, {
+      withCredentials: true,
     })
     .then((res) => res.data);
 };
 
-export const updateEvent = async (id, data, token) => {
+export const deleteEvent = async (id) => {
   return axios
-    .put(`${API_BASE}/api/events/${id}`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then((res) => res.data);
-};
-
-export const deleteEvent = async (id, token) => {
-  return axios
-    .delete(`${API_BASE}/api/events/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    .delete(`${API_BASE}/api/staff/events/${id}`, {
+      withCredentials: true,
     })
     .then((res) => res.data);
 };
@@ -147,7 +147,9 @@ export const fetchTicketmasterEventById = async (id) => {
 };
 
 export const getManualEvents = async () => {
-  const response = await axios.get(`${API_BASE}/api/events/manual`);
+  const response = await axios.get(`${API_BASE}/api/events/manual`, {
+    withCredentials: true,
+  });
   return response.data;
 };
 
@@ -159,4 +161,11 @@ export const fetchFromTicketmaster = async (externalId) => {
     console.error("Failed to fetch from Ticketmaster", error.message);
     return null;
   }
+};
+
+export const logoutUser = async () => {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
 };

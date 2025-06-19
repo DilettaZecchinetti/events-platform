@@ -18,9 +18,11 @@ const Login = () => {
         setLoading(true);
         setError("");
         try {
-            const { user, token } = await loginUser(email, password);
-            if (!user || !token) throw new Error("Login failed");
-            login(user, token);
+            const result = await loginUser(email, password);
+            console.log("loginUser returned:", result);
+            const { user } = result;
+            if (!user) throw new Error("Login failed");
+            login(user);
             navigate("/");
         } catch (err) {
             setError("Login failed. Please check your credentials.");
@@ -29,6 +31,7 @@ const Login = () => {
             setLoading(false);
         }
     };
+
 
 
     return (

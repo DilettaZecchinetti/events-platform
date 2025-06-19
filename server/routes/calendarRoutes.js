@@ -7,10 +7,11 @@ import {
 } from "../controllers/calendarController.js";
 import {
   authenticateUser,
-  authenticateToken,
+  // authenticateToken,
 } from "../middlewares/authMiddleware.js";
 
-router.get("/oauth", authenticateToken, initiateOAuth);
+// router.get("/oauth", authenticateToken, initiateOAuth);
+router.get("/oauth", initiateOAuth);
 router.get("/auth/google/callback", handleOAuthCallback);
 router.post("/add-event", authenticateUser, addEventToCalendar);
 

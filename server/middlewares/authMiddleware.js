@@ -9,15 +9,12 @@ if (!JWT_SECRET) {
 }
 
 export const authenticateUser = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  console.log("Cookies received:", req.cookies);
+  const token = req.cookies.token;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ error: "Authorization token missing or malformed" });
+  if (!token) {
+    return res.status(401).json({ error: "Authentication token not found" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -40,9 +37,6 @@ export const authenticateUser = async (req, res, next) => {
   }
 };
 
-/**
- * Middleware to check if user is authenticated
- */
 export const isAuthenticated = (req, res, next) => {
   if (req.user) {
     return next();
@@ -52,27 +46,9 @@ export const isAuthenticated = (req, res, next) => {
     .json({ error: "You must be logged in to access this resource." });
 };
 
-/**
- * Middleware to check if user is staff
- */
 export const isStaff = (req, res, next) => {
   if (req.user && req.user.role === "staff") {
     return next();
   }
   return res.status(403).json({ error: "Access denied. Staff only." });
-};
-
-export const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) return res.sendStatus(401);
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(403).json({ error: "Invalid token" });
-  }
 };
