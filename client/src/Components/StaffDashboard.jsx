@@ -275,9 +275,9 @@ const StaffDashboard = () => {
 
                     <hr />
                 </>
-            )}
+            )}git
 
-            <h3 className="mb-4 text-center fw-semibold">Staff Created Events:</h3>
+            <h3 className="mb-4 text-center fw-semibold">Staff Created Events</h3>
             {!showForm && (
                 <div className="text-center mb-4">
                     <button
