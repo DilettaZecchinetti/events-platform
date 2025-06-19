@@ -43,7 +43,7 @@ export const registerUser = async (name, email, password, role) => {
 export const loginUser = async (email, password) => {
   try {
     const response = await axios.post(
-      "/api/auth/login",
+      `${API_BASE}/api/auth/login`,
       { email, password },
       { withCredentials: true }
     );
@@ -58,7 +58,7 @@ export const loginUser = async (email, password) => {
 
 export const fetchCurrentUser = async () => {
   try {
-    const res = await fetch("/api/auth/me", {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
       method: "GET",
       credentials: "include",
     });
@@ -164,7 +164,7 @@ export const fetchFromTicketmaster = async (externalId) => {
 };
 
 export const logoutUser = async () => {
-  await fetch("/api/auth/logout", {
+  await fetch(`${API_BASE}/api/auth/logout`, {
     method: "POST",
     credentials: "include",
   });
