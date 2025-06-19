@@ -20,9 +20,10 @@ const Login = () => {
         try {
             const result = await loginUser(email, password);
             console.log("loginUser returned:", result);
-            const { user } = result;
+            const user = result;
             if (!user) throw new Error("Login failed");
             login(user);
+
             navigate("/");
         } catch (err) {
             setError("Login failed. Please check your credentials.");
@@ -31,8 +32,6 @@ const Login = () => {
             setLoading(false);
         }
     };
-
-
 
     return (
         <div className="container d-flex justify-content-center pt-5">
