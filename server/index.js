@@ -1,9 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-dotenv.config();
+
+import { MONGO_URI, JWT_SECRET, PORT } from "./config.js";
 
 import eventsRouter from "./routes/events.js";
 import authRouter from "./routes/auth.js";
@@ -11,9 +14,11 @@ import staffRouter from "./routes/staff.js";
 import calendarRouter from "./routes/calendarRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
-const app = express();
+// Log to check env
+console.log("JWT_SECRET:", JWT_SECRET ? "defined" : "undefined");
+console.log("MONGO_URI:", MONGO_URI ? "defined" : "undefined");
 
-// app.use(cors());
+const app = express();
 
 app.use(
   cors({
@@ -28,6 +33,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Events platform API is running!");
 });
+
 app.use("/api/events", eventsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/staff/events", staffRouter);
@@ -37,11 +43,11 @@ app.use(errorHandler);
 
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-const PORT = process.env.PORT || 5000;
-
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(MONGO_URI)
   .then(() => {
-    app.listen(PORT, () => {});
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   .catch((err) => console.error("MongoDB connection error:", err));

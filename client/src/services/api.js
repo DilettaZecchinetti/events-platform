@@ -1,14 +1,16 @@
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
 export const fetchEvents = async (keyword = "music", city = "") => {
   try {
     const params = {};
     if (keyword) params.keyword = keyword;
     if (city) params.city = city;
 
-    const response = await axios.get(`${API_BASE}/api/events`, { params });
+    const response = await axios.get(`${API_BASE}/api/events`, {
+      params,
+      withCredentials: true,
+    });
     return response.data;
   } catch (err) {
     console.error("Error fetching events:", err);
@@ -18,7 +20,9 @@ export const fetchEvents = async (keyword = "music", city = "") => {
 
 export const fetchEventsById = async (id) => {
   try {
-    const response = await axios.get(`${API_BASE}/api/events/${id}`);
+    const response = await axios.get(`${API_BASE}/api/events/${id}`, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching events by ID:", error);
@@ -61,17 +65,24 @@ export const fetchCurrentUser = async () => {
     const res = await fetch(`${API_BASE}/api/auth/me`, {
       method: "GET",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
+      const contentType = res.headers.get("Content-Type");
+      const errorText = contentType?.includes("application/json")
+        ? JSON.stringify(await res.json())
+        : await res.text();
+
       console.error("fetchCurrentUser error response:", res.status, errorText);
       throw new Error("Not authenticated");
     }
 
     return await res.json();
   } catch (error) {
-    console.error("fetchCurrentUser fetch error:", error);
+    console.error("fetchCurrentUser fetch error:", error.message);
     throw error;
   }
 };
@@ -90,6 +101,13 @@ export const addEventToCalendar = async (eventId) => {
     { eventId },
     { withCredentials: true }
   );
+};
+
+export const getOAuthUrl = async () => {
+  const response = await axios.get(`${API_BASE}/api/calendar/oauth`, {
+    withCredentials: true,
+  });
+  return response.data.url;
 };
 
 export const createEvent = async (eventData) => {

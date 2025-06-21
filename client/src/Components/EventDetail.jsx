@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { fetchEventsById, signupForEvent, addEventToCalendar } from '../services/api.js';
+import { fetchEventsById, signupForEvent, addEventToCalendar, getOAuthUrl } from '../services/api.js';
 
 import { useUser } from "../context/UserContext.jsx";
 
@@ -143,11 +143,8 @@ const EventDetail = () => {
         setCalendarLoading(true);
         setCalendarMessage("");
         try {
-            const { data } = await axios.get(`${API_BASE}/api/calendar/oauth`, {
-                withCredentials: true,
-            });
+            const oauthUrl = await getOAuthUrl();
 
-            const oauthUrl = data.url;
             if (!oauthUrl) throw new Error("OAuth URL missing.");
 
             const width = 500, height = 600;
@@ -166,6 +163,7 @@ const EventDetail = () => {
             setCalendarLoading(false);
         }
     };
+
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error.message}</p>;

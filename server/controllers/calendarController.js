@@ -14,7 +14,13 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 export const initiateOAuth = (req, res) => {
-  const userId = req.user.id;
+  if (!req.user) {
+    return res.status(401).json({ error: "User not authenticated" });
+  }
+
+  console.log("req.user in initiateOAuth:", req.user);
+
+  const userId = req.user._id;
 
   const state = Buffer.from(JSON.stringify({ userId })).toString("base64");
 
@@ -78,6 +84,7 @@ export const handleOAuthCallback = async (req, res) => {
 };
 
 export const addEventToCalendar = async (req, res) => {
+  console.log("addEventToCalendar called, body:", req.body);
   try {
     const { eventId } = req.body;
 
@@ -98,8 +105,9 @@ export const addEventToCalendar = async (req, res) => {
 
     oauth2Client.setCredentials(userTokens);
 
-    const event = await Event.findById(eventId).lean();
+    const event = await Event.findById(eventId);
     if (!event) {
+      console.warn(`Event with externalId ${eventId} not found`);
       return res.status(404).json({ msg: "Event not found in database" });
     }
 

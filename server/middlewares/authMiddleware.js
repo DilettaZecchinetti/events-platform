@@ -1,12 +1,21 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import User from "../models/User.js";
+import { JWT_SECRET } from "../config.js";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+export const protect = async (req, res, next) => {
+  const token = req.cookies?.token;
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined in the environment variables");
-}
+  if (!token) return res.status(401).json({ msg: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = await User.findById(decoded.id).select("-password");
+    next();
+  } catch (err) {
+    console.error("Auth error:", err);
+    res.status(401).json({ msg: "Invalid token" });
+  }
+};
 
 export const authenticateUser = async (req, res, next) => {
   console.log("Cookies received:", req.cookies);
@@ -30,6 +39,7 @@ export const authenticateUser = async (req, res, next) => {
     }
 
     req.user = user;
+    console.log("User authenticated:", user.email);
     next();
   } catch (err) {
     console.error("Auth error:", err.message);
@@ -51,4 +61,22 @@ export const isStaff = (req, res, next) => {
     return next();
   }
   return res.status(403).json({ error: "Access denied. Staff only." });
+};
+
+export const authenticateToken = async (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token)
+    return res.status(401).json({ msg: "No token, authorization denied" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) return res.status(401).json({ msg: "User not found" });
+
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error("JWT verification failed:", err);
+    res.status(401).json({ msg: "Invalid token" });
+  }
 };
