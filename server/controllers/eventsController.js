@@ -18,21 +18,36 @@ export const getEventById = async (req, res) => {
   const id = req.params.id;
 
   try {
+    if (!id) {
+      return res.status(400).json({ error: "Missing event ID" });
+    }
+
+    // If id is a valid MongoDB ObjectId, fetch manual event from DB
     if (mongoose.Types.ObjectId.isValid(id)) {
-      const event = await Event.findById(id);
+      const event = await Event.findById(id).populate("attendees");
       if (!event) {
         return res.status(404).json({ error: "Event not found in database" });
       }
       return res.status(200).json(event);
     }
 
-    if (!id) {
-      return res.status(400).json({ error: "Missing event ID" });
+    // If not a manual event id, fetch fresh from Ticketmaster API
+    try {
+      const externalEvent = await fetchEventById(id);
+      console.log("Ticketmaster event:", externalEvent);
+
+      return res.status(200).json(externalEvent);
+    } catch (err) {
+      if (err.response?.status === 404) {
+        return res.status(404).json({ error: "Ticketmaster event not found" });
+      }
+      if (err.response?.status === 429) {
+        return res.status(429).json({
+          error: "Too many requests to Ticketmaster API, please try later",
+        });
+      }
+      throw err; // Let outer catch handle other errors
     }
-
-    const event = await fetchEventById(id);
-
-    return res.status(200).json(event);
   } catch (err) {
     console.error("Error in getEventById:", err.message);
 
@@ -207,7 +222,7 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-const isManualEvent = (id) => /^[a-f\d]{24}$/i.test(id);
+const isManualEvent = (eventId) => /^[0-9a-fA-F]{24}$/.test(eventId); // ✅ good
 
 export const signupForEvent = async (req, res) => {
   const { eventId } = req.body;
@@ -251,10 +266,14 @@ export const signupForEvent = async (req, res) => {
           },
           url: data.url || "",
           image: data.images?.[0]?.url || "",
+          description: data.description || data.info || "",
+          source: "ticketmaster",
           attendees: [],
         });
 
+        console.log("Creating new event with source:", event.source);
         await event.save();
+        console.log("Saved event:", event);
       }
     }
 

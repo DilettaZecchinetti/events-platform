@@ -29,6 +29,7 @@ const EventDetail = () => {
             try {
                 setLoading(true);
                 const data = await fetchEventsById(id);
+                console.log("Fetched event:", data);
                 setEvent(data);
             } catch (err) {
                 setError(err);
@@ -66,9 +67,10 @@ const EventDetail = () => {
 
     useEffect(() => {
         if (event && user) {
-            // Replace this check with your actual data structure for attendees
             const userIsSignedUp = event.attendees?.some(attendee => attendee._id === user._id);
             setIsSignedUp(userIsSignedUp);
+        } else {
+            setIsSignedUp(false);
         }
     }, [event, user]);
 
@@ -182,20 +184,23 @@ const EventDetail = () => {
     if (error) return <p>Error: {error.message}</p>;
     if (!event) return <p>Event not found.</p>;
 
+    const imageUrl =
+        event.images?.[4]?.url ||
+        event.images?.[0]?.url ||
+        event.image ||
+        null;
+
     return (
         <div className="container mt-5">
             <div className="card shadow-lg mx-auto" style={{ maxWidth: '700px' }}>
                 <div className="ratio ratio-16x9">
-                    <img
-                        src={
-                            event.images?.[4]?.url ||
-                            event.images?.[0]?.url ||
-                            event.image ||
-                            ""
-                        }
-                        alt={event.name || event.title}
-                        className="object-fit-cover w-100 h-100"
-                    />
+                    {imageUrl && (
+                        <img
+                            src={imageUrl}
+                            alt={event.name || event.title}
+                            className="object-fit-cover w-100 h-100"
+                        />
+                    )}
                 </div>
                 <div className="card-body">
                     <h2 className="card-title">{event.name || event.title}</h2>
@@ -206,32 +211,47 @@ const EventDetail = () => {
                         </p>
                     )}
 
-                    {event.dates?.start?.localDate && (
+                    {(event.startDate || event.dates?.start?.localDate) && (
                         <p className="card-text text-muted">
                             <strong>Date:</strong>{" "}
-                            {(() => {
-                                const date = new Date(`${event.dates.start.localDate}T${event.dates.start.localTime}`);
-                                const formattedDate = date.toLocaleDateString("en-GB").replaceAll("/", "-");
-                                const formattedTime = date.toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                });
-                                return `${formattedDate} at ${formattedTime}`;
-                            })()}
+                            {event.startDate || event.dates?.start?.localDate ? (
+                                (() => {
+                                    const rawStart =
+                                        event.startDate ||
+                                        `${event.dates.start.localDate}T${event.dates.start.localTime}`;
+                                    const date = new Date(rawStart);
+                                    const formattedDate = date
+                                        .toLocaleDateString("en-GB")
+                                        .replaceAll("/", "-");
+                                    const formattedTime = date.toLocaleTimeString("en-US", {
+                                        hour: "numeric",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                    });
+                                    return `${formattedDate} at ${formattedTime}`;
+                                })()
+                            ) : (
+                                "Date not available"
+                            )}
+                        </p>
+
+                    )}
+
+                    {event.promoter?.description && (
+                        <p className="text-sm text-gray-700">
+                            <span className="font-semibold">Promoter:</span> {event.promoter.description}
                         </p>
                     )}
 
-                    {event.description && (
-                        <p className="card-text">
-                            <strong>Description:</strong>
-                            <br />
-                            {event.description.split("\n").map((line, i) => (
-                                <span key={i}>
-                                    {line}
-                                    <br />
-                                </span>
-                            ))}
+                    {event.info && (
+                        <p className="text-sm text-gray-700">
+                            <span className="font-semibold">Info:</span> {event.info}
+                        </p>
+                    )}
+
+                    {event.pleaseNote && (
+                        <p className="text-sm text-red-700">
+                            <span className="font-semibold">Please Note:</span> {event.pleaseNote}
                         </p>
                     )}
 

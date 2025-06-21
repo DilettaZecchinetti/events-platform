@@ -20,7 +20,6 @@ const eventSchema = new mongoose.Schema({
   source: {
     type: String,
     enum: ["ticketmaster", "manual"],
-    default: "manual",
   },
   title: { type: String, required: true },
   description: String,
