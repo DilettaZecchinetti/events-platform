@@ -17,6 +17,8 @@ const EventDetail = () => {
     const [calendarMessage, setCalendarMessage] = useState('');
     const [calendarLoading, setCalendarLoading] = useState(false);
     const [eventMessage, setEventMessage] = useState('');
+    const [isSignedUp, setIsSignedUp] = useState(false);
+
     const hasHandledOAuth = useRef(false);
 
     const navigate = useNavigate();
@@ -61,6 +63,15 @@ const EventDetail = () => {
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
     }, [event]);
+
+    useEffect(() => {
+        if (event && user) {
+            // Replace this check with your actual data structure for attendees
+            const userIsSignedUp = event.attendees?.some(attendee => attendee._id === user._id);
+            setIsSignedUp(userIsSignedUp);
+        }
+    }, [event, user]);
+
 
     const saveEventToDB = async (eventObj) => {
         const cleaned = {
@@ -130,12 +141,14 @@ const EventDetail = () => {
         try {
             await signupForEvent(id, user._id);
             setSignupMessage('Successfully signed up for the event!');
+            setIsSignedUp(true);
         } catch (error) {
             setSignupMessage('Failed to sign up. Please try again.');
         } finally {
             setSignupLoading(false);
         }
     };
+
 
     const handleAddToCalendar = async () => {
         if (!user) return setCalendarMessage("Log in to use calendar.");
@@ -242,9 +255,10 @@ const EventDetail = () => {
                                 <button
                                     className="btn btn-primary"
                                     onClick={handleSignUp}
-                                    disabled={signupLoading}
+                                    disabled={signupLoading || isSignedUp}
                                 >
-                                    {signupLoading ? "Signing up…" : "Sign Up"}
+                                    {isSignedUp ? "Already Signed Up" : signupLoading ? "Signing up…" : "Sign Up"}
+
                                 </button>
                                 <button
                                     className="btn btn-success"
@@ -281,7 +295,7 @@ const EventDetail = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
