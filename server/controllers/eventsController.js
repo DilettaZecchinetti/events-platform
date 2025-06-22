@@ -5,9 +5,9 @@ import { Event } from "../models/Event.js";
 
 export const getEvents = async (req, res) => {
   try {
-    const keyword = req.query.keyword || "music";
+    const genreId = req.query.genreId || "KnvZfZ7vAv1";
     const city = req.query.city || null;
-    const events = await fetchEvents(keyword, city);
+    const events = await fetchEvents({ genreId, city });
     res.status(200).json(events);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch events" });
@@ -46,7 +46,7 @@ export const getEventById = async (req, res) => {
           error: "Too many requests to Ticketmaster API, please try later",
         });
       }
-      throw err; // Let outer catch handle other errors
+      throw err;
     }
   } catch (err) {
     console.error("Error in getEventById:", err.message);

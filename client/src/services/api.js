@@ -1,10 +1,14 @@
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-export const fetchEvents = async (keyword = "music", city = "") => {
+
+export const fetchEvents = async ({
+  genreId = "KnvZfZ7vAv1",
+  city = "",
+} = {}) => {
   try {
     const params = {};
-    if (keyword) params.keyword = keyword;
+    if (genreId) params.genreId = genreId;
     if (city) params.city = city;
 
     const response = await axios.get(`${API_BASE}/api/events`, {
