@@ -30,19 +30,27 @@ function Header() {
                         </Link>
                     )}
 
+                    {user?.role === "staff" && (
+                        <>
+                            <Link to="/events" className="btn btn-outline-primary me-2">
+                                Events
+                            </Link>
+                            <Link to="/staff-dashboard" className="btn btn-outline-primary me-2">
+                                Your Events
+                            </Link>
+                        </>
+                    )}
+
                     {user ? (
                         <button onClick={handleLogout} className="btn btn-danger me-2">
                             Log Out
                         </button>
                     ) : (
-                        <Link
-                            to="/"
-                            className="btn btn-success me-2"
-                            onClick={() => setMenuOpen(false)}
-                        >
+                        <Link to="/" className="btn btn-success me-2" onClick={() => setMenuOpen(false)}>
                             Login/Register
                         </Link>
                     )}
+
                     <span
                         className="d-inline-flex align-items-center justify-content-center rounded-circle border"
                         style={{ width: "40px", height: "40px", fontSize: "20px" }}
@@ -50,6 +58,7 @@ function Header() {
                         👤
                     </span>
                 </nav>
+
 
 
                 {/* Mobile Nav Toggle */}
@@ -67,7 +76,6 @@ function Header() {
             {/* Mobile Dropdown */}
             {menuOpen && (
                 <div className="d-md-none bg-white border-top py-3 px-4">
-
                     {user?.role === "user" && (
                         <Link
                             to="/staff-events"
@@ -76,6 +84,25 @@ function Header() {
                         >
                             Staff Created Events
                         </Link>
+                    )}
+
+                    {user?.role === "staff" && (
+                        <>
+                            <Link
+                                to="/events"
+                                className="btn btn-outline-primary w-100 mb-3"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Events
+                            </Link>
+                            <Link
+                                to="/staff-dashboard"
+                                className="btn btn-outline-primary w-100 mb-3"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Your Events
+                            </Link>
+                        </>
                     )}
 
                     {user ? (
@@ -109,6 +136,7 @@ function Header() {
                     </div>
                 </div>
             )}
+
         </header>
     );
 }

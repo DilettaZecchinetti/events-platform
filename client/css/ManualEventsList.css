@@ -1,0 +1,36 @@
+.event-list {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+    list-style: none;
+    padding: 0;
+  }
+  
+  @media (min-width: 600px) {
+    .event-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 992px) {
+    .event-list {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  .event-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  .event-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+  }
+  

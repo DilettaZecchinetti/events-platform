@@ -8,6 +8,7 @@ import Register from './pages/Register'
 import EventDetail from './Components/EventDetail'
 import StaffDashboard from './Components/StaffDashboard';
 import ManualEventList from './Components/ManualEventsList';
+import EventList from './Components/EventsList';
 import { useUser } from "./context/UserContext";
 
 
@@ -36,7 +37,8 @@ function App() {
           }
         />
         <Route path='/register' element={<Register />} />
-
+        <Route path='/events' element={<EventList />} />
+        <Route path='/staff-dashboard' element={<StaffDashboard />} />
       </Routes>
     </Router>
   )

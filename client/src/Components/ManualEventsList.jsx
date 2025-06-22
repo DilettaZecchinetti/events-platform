@@ -3,6 +3,7 @@ import axios from "axios";
 import { useUser } from "../context/UserContext.jsx";
 import { signupForEvent } from "../services/api.js";
 import { useNavigate } from "react-router-dom";
+import "../../css/ManualEventsList.css";
 
 const ManualEventList = () => {
     const { user } = useUser();
@@ -132,108 +133,96 @@ const ManualEventList = () => {
     };
 
     const renderEventList = (eventsArray, showButtons = true) => (
-        <ul className="list-unstyled">
+        <ul className="event-list">
             {eventsArray.map((event) => (
-                <li key={event._id} className="card mb-4 shadow-sm">
-                    <div className="card-body">
-                        <h5 className="card-title">{event.title}</h5>
-                        <p className="card-text">{event.description}</p>
-                        <p className="card-text">📍 {event.location}</p>
-                        <p className="card-subtitle mb-2 text-muted">
-                            {`${formatDateTime(event.startDate)} – ${formatDateTime(event.endDate)}`}
-                        </p>
-                        <p className="card-text">
-                            Attendees: {event.attendees ? event.attendees.length : 0}
-                        </p>
-
-                        {showButtons && (
-                            <>
-                                {/* Messages for this event only */}
-                                {signupMessage?.eventId === event._id && (
-                                    <div className="alert alert-success" role="alert">
-                                        {signupMessage.text}
-                                    </div>
-                                )}
-                                {calendarMessage?.eventId === event._id && (
-                                    <div className="alert alert-success" role="alert">
-                                        {calendarMessage.text}
-                                    </div>
-                                )}
-                                {calendarError?.eventId === event._id && (
-                                    <div className="alert alert-danger" role="alert">
-                                        {calendarError.text}
-                                    </div>
-                                )}
-
-                                <div className="mt-3 d-flex gap-2">
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => handleSignUp(event._id)}
-                                        disabled={signupLoading[event._id] || isUserSignedUp(event)}
-                                    >
-                                        {isUserSignedUp(event)
-                                            ? "Already Signed Up"
-                                            : signupLoading[event._id]
-                                                ? "Signing up..."
-                                                : "Sign Up"}
-                                    </button>
-
-                                    <button
-                                        className="btn btn-success"
-                                        onClick={() => handleAddToCalendar(event)}
-                                        disabled={calendarLoading[event._id]}
-                                    >
-                                        {calendarLoading[event._id] ? "Adding..." : "Add to Calendar"}
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                <li key={event._id} className="event-card">
+                    <div className="event-header">
+                        <h3 className="event-title">{event.title}</h3>
                     </div>
+
+                    <p className="event-description">{event.description}</p>
+                    <p className="event-location">📍 {event.location}</p>
+                    <p className="event-datetime">
+                        🕒 {`${formatDateTime(event.startDate)} – ${formatDateTime(event.endDate)}`}
+                    </p>
+                    <p className="event-datetime">
+                        👥 Attendees: {event.attendees ? event.attendees.length : 0}
+                    </p>
+
+                    {showButtons && (
+                        <>
+                            {/* Inline event messages */}
+                            {signupMessage?.eventId === event._id && (
+                                <div className="alert alert-success mt-2">{signupMessage.text}</div>
+                            )}
+                            {calendarMessage?.eventId === event._id && (
+                                <div className="alert alert-success mt-2">{calendarMessage.text}</div>
+                            )}
+                            {calendarError?.eventId === event._id && (
+                                <div className="alert alert-danger mt-2">{calendarError.text}</div>
+                            )}
+
+                            <div className="event-actions">
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => handleSignUp(event._id)}
+                                    disabled={signupLoading[event._id] || isUserSignedUp(event)}
+                                >
+                                    {isUserSignedUp(event)
+                                        ? "Already Signed Up"
+                                        : signupLoading[event._id]
+                                            ? "Signing up..."
+                                            : "Sign Up"}
+                                </button>
+
+                                <button
+                                    className="btn btn-success"
+                                    onClick={() => handleAddToCalendar(event)}
+                                    disabled={calendarLoading[event._id]}
+                                >
+                                    {calendarLoading[event._id] ? "Adding..." : "Add to Calendar"}
+                                </button>
+                            </div>
+
+                        </>
+                    )}
                 </li>
             ))}
         </ul>
     );
 
-
     return (
         <div className="container my-4">
-            <h2 className="mb-4 text-center" style={{ fontSize: "2rem", fontWeight: "bold" }}>
+            <h2 className="text-center mb-5" style={{ fontSize: "2rem", fontWeight: "bold" }}>
                 Staff Curated Events
             </h2>
 
-            {signupMessage && (
-                <div className="alert alert-success" role="alert">
-                    {signupMessage}
-                </div>
-            )}
-            {calendarMessage && (
-                <div className="alert alert-success" role="alert">
-                    {calendarMessage}
-                </div>
-            )}
-            {calendarError && (
-                <div className="alert alert-danger" role="alert">
-                    {calendarError}
-                </div>
-            )}
-
-            <section>
+            <section className="mb-5">
                 <h3 className="mb-3">Upcoming Events</h3>
-                {upcomingEvents.length === 0 ? <p>No upcoming events available.</p> : renderEventList(upcomingEvents)}
+                {upcomingEvents.length === 0 ? (
+                    <p>No upcoming events available.</p>
+                ) : (
+                    renderEventList(upcomingEvents)
+                )}
             </section>
 
-            <section className="mt-5">
+            <section className="mb-5">
                 <h3 className="mb-3">Past Events</h3>
-                {pastEvents.length === 0 ? <p>No past events available.</p> : renderEventList(pastEvents, false)}
+                {pastEvents.length === 0 ? (
+                    <p>No past events available.</p>
+                ) : (
+                    renderEventList(pastEvents, false)
+                )}
             </section>
 
-            <div className="mt-4">
+            <div className="text-center">
                 <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
                     ← Go Back
                 </button>
             </div>
         </div>
     );
+
 };
 
 export default ManualEventList;
