@@ -14,10 +14,6 @@ import staffRouter from "./routes/staff.js";
 import calendarRouter from "./routes/calendarRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
-// Log to check env
-console.log("JWT_SECRET:", JWT_SECRET ? "defined" : "undefined");
-console.log("MONGO_URI:", MONGO_URI ? "defined" : "undefined");
-
 const app = express();
 
 app.use(
@@ -46,8 +42,6 @@ app.get("/favicon.ico", (req, res) => res.status(204).end());
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    app.listen(PORT, () => {});
   })
   .catch((err) => console.error("MongoDB connection error:", err));

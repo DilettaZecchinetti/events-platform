@@ -22,7 +22,6 @@ export const getEventById = async (req, res) => {
       return res.status(400).json({ error: "Missing event ID" });
     }
 
-    // If id is a valid MongoDB ObjectId, fetch manual event from DB
     if (mongoose.Types.ObjectId.isValid(id)) {
       const event = await Event.findById(id).populate("attendees");
       if (!event) {
@@ -31,11 +30,17 @@ export const getEventById = async (req, res) => {
       return res.status(200).json(event);
     }
 
-    // If not a manual event id, fetch fresh from Ticketmaster API
+    const existingEvent = await Event.findOne({
+      externalId: id,
+      source: "ticketmaster",
+    }).populate("attendees");
+
+    if (existingEvent) {
+      return res.status(200).json(existingEvent);
+    }
+
     try {
       const externalEvent = await fetchEventById(id);
-      console.log("Ticketmaster event:", externalEvent);
-
       return res.status(200).json(externalEvent);
     } catch (err) {
       if (err.response?.status === 404) {
@@ -50,16 +55,6 @@ export const getEventById = async (req, res) => {
     }
   } catch (err) {
     console.error("Error in getEventById:", err.message);
-
-    if (err.response?.status === 404) {
-      return res.status(404).json({ error: "Ticketmaster event not found" });
-    }
-    if (err.response?.status === 429) {
-      return res.status(429).json({
-        error: "Too many requests to Ticketmaster API, please try later",
-      });
-    }
-
     return res.status(500).json({ error: "Failed to fetch event by id" });
   }
 };
@@ -222,7 +217,7 @@ export const updateEvent = async (req, res) => {
   }
 };
 
-const isManualEvent = (eventId) => /^[0-9a-fA-F]{24}$/.test(eventId); // ✅ good
+const isManualEvent = (eventId) => /^[0-9a-fA-F]{24}$/.test(eventId);
 
 export const signupForEvent = async (req, res) => {
   const { eventId } = req.body;
@@ -271,9 +266,7 @@ export const signupForEvent = async (req, res) => {
           attendees: [],
         });
 
-        console.log("Creating new event with source:", event.source);
         await event.save();
-        console.log("Saved event:", event);
       }
     }
 

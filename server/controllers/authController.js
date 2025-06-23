@@ -74,10 +74,6 @@ export const loginUser = async (req, res) => {
       expiresIn: "1d",
     });
 
-    const decodedTest = jwt.verify(token, JWT_SECRET);
-
-    console.log("JWT payload test:", decodedTest);
-
     res.cookie("token", token, {
       ...cookieOptions,
       maxAge: 24 * 60 * 60 * 1000, // 1 day

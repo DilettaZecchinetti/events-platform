@@ -2,8 +2,6 @@ import { Event } from "../models/Event.js";
 import { v4 as uuidv4 } from "uuid";
 
 export const createEvent = async (req, res) => {
-  console.log("User on request:", req.user);
-
   try {
     if (!req.user || !req.user._id) {
       return res

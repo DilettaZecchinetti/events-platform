@@ -11,7 +11,6 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 router.use((req, res, next) => {
-  console.log(`Incoming request to calendar API: ${req.method} ${req.url}`);
   next();
 });
 

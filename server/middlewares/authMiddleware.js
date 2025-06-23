@@ -18,7 +18,6 @@ export const protect = async (req, res, next) => {
 };
 
 export const authenticateUser = async (req, res, next) => {
-  console.log("Cookies received:", req.cookies);
   const token = req.cookies.token;
 
   if (!token) {
@@ -39,7 +38,6 @@ export const authenticateUser = async (req, res, next) => {
     }
 
     req.user = user;
-    console.log("User authenticated:", user.email);
     next();
   } catch (err) {
     console.error("Auth error:", err.message);

@@ -24,8 +24,6 @@ export const fetchEvents = async ({
 
     const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
 
-    console.log("Response data:", data);
-
     return data._embedded?.events || [];
   } catch (err) {
     console.error(

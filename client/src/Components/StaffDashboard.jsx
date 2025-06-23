@@ -23,7 +23,6 @@ const StaffDashboard = () => {
     const fetchEvents = async () => {
         try {
             const userEvents = await getManualEvents();
-            console.log("Fetched events:", userEvents);
             const normalizedEvents = Array.isArray(userEvents)
                 ? userEvents.map((event) => ({ ...event, _id: event._id }))
                 : [];
@@ -39,7 +38,6 @@ const StaffDashboard = () => {
         const fetchEvents = async () => {
             try {
                 const userEvents = await getManualEvents();
-                console.log("Fetched events:", userEvents);
                 setEvents(userEvents);
             } catch (err) {
                 console.error("Error fetching events:", err);
@@ -73,7 +71,6 @@ const StaffDashboard = () => {
 
 
     const handleCreate = async () => {
-        console.log("handleCreate called");
 
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
             setError("End date/time must be after start date/time.");
@@ -89,7 +86,6 @@ const StaffDashboard = () => {
                 endDate: convertLocalDateTimeToISO(formData.endDateTime),
             });
 
-            console.log("Event creation complete");
 
             resetForm();
             setShowForm(false);

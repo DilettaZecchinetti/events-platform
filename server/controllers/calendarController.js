@@ -18,8 +18,6 @@ export const initiateOAuth = (req, res) => {
     return res.status(401).json({ error: "User not authenticated" });
   }
 
-  console.log("req.user in initiateOAuth:", req.user);
-
   const userId = req.user._id;
 
   const state = Buffer.from(JSON.stringify({ userId })).toString("base64");
@@ -84,7 +82,6 @@ export const handleOAuthCallback = async (req, res) => {
 };
 
 export const addEventToCalendar = async (req, res) => {
-  console.log("addEventToCalendar called, body:", req.body);
   try {
     const { eventId } = req.body;
 

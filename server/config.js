@@ -1,10 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("=== CONFIG.JS ===");
-console.log("MONGO_URI:", process.env.MONGO_URI ? "defined" : "undefined");
-console.log("JWT_SECRET:", process.env.JWT_SECRET ? "defined" : "undefined");
-
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 

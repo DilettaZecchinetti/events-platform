@@ -19,7 +19,6 @@ const Login = () => {
         setError("");
         try {
             const result = await loginUser(email, password);
-            console.log("loginUser returned:", result);
             const user = result;
             if (!user) throw new Error("Login failed");
             login(user);

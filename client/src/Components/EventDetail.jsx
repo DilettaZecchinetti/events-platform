@@ -29,7 +29,6 @@ const EventDetail = () => {
             try {
                 setLoading(true);
                 const data = await fetchEventsById(id);
-                console.log("Fetched event:", data);
                 setEvent(data);
             } catch (err) {
                 setError(err);
