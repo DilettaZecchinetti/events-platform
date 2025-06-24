@@ -30,7 +30,7 @@ Password: user123
 
 Use the following test credentials to log in as a staff user:
 Email: staff@email.com
-Password: user123
+Password: staff123
 
 
 This account has staff privileges and can access the staff dashboard to create events.
