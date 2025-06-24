@@ -25,9 +25,14 @@ function Header() {
 
                 <nav className="d-none d-md-flex align-items-center gap-3">
                     {user?.role === "user" && (
-                        <Link to="/staff-events" className="btn btn-outline-primary me-2">
-                            Staff Created Events
-                        </Link>
+                        <>
+                            <Link to="/staff-events" className="btn btn-outline-primary me-2">
+                                Staff Created Events
+                            </Link>
+                            <Link to="/events" className="btn btn-outline-primary me-2">
+                                Events
+                            </Link>
+                        </>
                     )}
 
                     {user?.role === "staff" && (
@@ -77,13 +82,22 @@ function Header() {
             {menuOpen && (
                 <div className="d-md-none bg-white border-top py-3 px-4">
                     {user?.role === "user" && (
-                        <Link
-                            to="/staff-events"
-                            className="btn btn-outline-primary w-100 mb-3"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            Staff Created Events
-                        </Link>
+                        <>
+                            <Link
+                                to="/events"
+                                className="btn btn-outline-primary w-100 mb-3"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Events
+                            </Link>
+                            <Link
+                                to="/staff-events"
+                                className="btn btn-outline-primary w-100 mb-3"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Staff Created Events
+                            </Link>
+                        </>
                     )}
 
                     {user?.role === "staff" && (
