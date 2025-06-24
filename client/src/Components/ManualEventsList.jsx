@@ -51,7 +51,7 @@ const ManualEventList = () => {
 
     const handleSignUp = async (eventId) => {
         if (!user) {
-            setSignupMessage("You need to log in to sign up for this event.");
+            setSignupMessage({ eventId, text: "You need to log in to sign up for this event." });
             return;
         }
 
@@ -60,7 +60,7 @@ const ManualEventList = () => {
 
         try {
             const result = await signupForEvent(eventId);
-            setSignupMessage(result.message || "Successfully signed up for the event!");
+            setSignupMessage({ eventId, text: result.message || "Successfully signed up for the event!" });
 
             setEvents((prevEvents) =>
                 prevEvents.map((event) =>
@@ -71,7 +71,7 @@ const ManualEventList = () => {
             );
         } catch (err) {
             console.error("Signup failed:", err);
-            setSignupMessage(err.response?.data?.error || "Failed to sign up. Please try again.");
+            setSignupMessage({ eventId, text: err.response?.data?.error || "Failed to sign up. Please try again." });
         } finally {
             setSignupLoading((prev) => ({ ...prev, [eventId]: false }));
         }
@@ -84,7 +84,7 @@ const ManualEventList = () => {
 
     const handleAddToCalendar = async (eventData) => {
         if (!user) {
-            setCalendarError("You need to log in to add this event to your calendar.");
+            setCalendarError({ eventId, text: "You need to log in to add this event to your calendar." });
             return;
         }
 
@@ -109,7 +109,7 @@ const ManualEventList = () => {
             );
 
             if (res.data.msg && res.data.msg.toLowerCase().includes("successfully added")) {
-                setCalendarMessage(res.data.msg);
+                setCalendarMessage({ eventId, text: res.data.msg });
             } else if (res.data.requiresAuth === true) {
                 const oauthRes = await axios.get(`${API_BASE}/api/calendar/oauth`, {
                     withCredentials: true,
@@ -117,15 +117,16 @@ const ManualEventList = () => {
 
                 const oauthUrl = oauthRes.data.url;
                 window.open(oauthUrl, "_blank", "width=500,height=600");
-                setCalendarMessage("Please complete the calendar connection in the new window.");
+                setCalendarMessage({ eventId, text: "Please complete the calendar connection in the new window." });
             } else if (res.data.error) {
-                setCalendarError(res.data.error);
+                setCalendarError({ eventId, text: res.data.error });
             } else {
                 setCalendarError("Unexpected response from server.");
             }
         } catch (err) {
             console.error("Error adding to calendar:", err);
-            setCalendarError("Failed to add event to calendar.");
+            setCalendarError({ eventId, text: "Failed to add event to calendar." });
+
         } finally {
             setCalendarLoading((prev) => ({ ...prev, [eventId]: false }));
             window.scrollTo({ top: 0, behavior: "smooth" });
