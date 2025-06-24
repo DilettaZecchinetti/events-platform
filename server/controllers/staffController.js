@@ -71,7 +71,10 @@ export const updateEvent = async (req, res) => {
     );
 
     if (!event) {
-      return res.status(404).json({ msg: "Event not found or not authorized" });
+      return res.status(403).json({
+        error:
+          "Access denied: you cannot update events created by other staff members.",
+      });
     }
 
     res.json(event);

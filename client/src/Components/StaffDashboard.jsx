@@ -209,7 +209,11 @@ const StaffDashboard = () => {
             fetchEvents();
         } catch (err) {
             console.error("Update error:", err.message);
-            setError("Failed to update event. Please try again.");
+            if (err.response?.status === 403) {
+                setError(err.response.data.error);
+            } else {
+                setError("Failed to update event. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
