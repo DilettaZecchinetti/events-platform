@@ -454,6 +454,7 @@ const StaffDashboard = () => {
                             <p>{event.description}</p>
                             <p>📍 {event.location?.venue}, {event.location?.city}</p>
                             <div>{formatDateTimeRangeMultiline(event.startDate, event.endDate)}</div>
+
                         </li>
                     ))}
                 </ul>
