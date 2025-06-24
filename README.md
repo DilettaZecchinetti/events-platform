@@ -139,3 +139,6 @@ VITE_API_BASE_URL=
 
 > ⚠️ Do **not** commit `.env` files to version control. Add `.env` to your `.gitignore` file.
 
+
+## ‼️ Known Limitations
+The Add to Calendar feature works on desktop but may not work reliably on mobile browsers due to platform restrictions. Mobile users can still browse and sign up for events but might need to add events to their calendar manually.
