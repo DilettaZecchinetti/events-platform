@@ -38,15 +38,42 @@ const ManualEventList = () => {
     const upcomingEvents = events.filter((event) => new Date(event.endDate) >= now);
     const pastEvents = events.filter((event) => new Date(event.endDate) < now);
 
-    const formatDateTime = (isoString) => {
-        const date = new Date(isoString);
-        const formattedDate = date.toLocaleDateString("en-GB").replaceAll("/", "-");
-        const formattedTime = date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        });
-        return `${formattedDate} at ${formattedTime}`;
+    const convertLocalDateTimeToISO = (localDateTime) => {
+        if (!localDateTime) return null;
+        const [datePart, timePart] = localDateTime.split("T");
+        return `${datePart}T${timePart}:00`;
+    };
+
+    const formatDateTimeRangeMultiline = (start, end) => {
+        if (!start || !end) return "Time not available";
+
+        const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+        const optionsTime = { hour: 'numeric', minute: '2-digit', hour12: true };
+
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        const formattedStart = `${startDate.toLocaleDateString('en-GB', optionsDate)} at ${startDate.toLocaleTimeString('en-GB', optionsTime)}`;
+        const formattedEnd = `${endDate.toLocaleDateString('en-GB', optionsDate)} at ${endDate.toLocaleTimeString('en-GB', optionsTime)}`;
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ marginBottom: 2 }}>🕒 {formattedStart}</span>
+                <small
+                    style={{
+                        fontWeight: 'normal',
+                        color: '#666',
+                        alignSelf: 'center',
+                        marginBottom: 2
+                    }}
+                >
+                    until
+                </small>
+                <span>⏰ {formattedEnd}</span>
+            </div>
+
+
+        );
     };
 
     const handleSignUp = async (eventId) => {
@@ -142,10 +169,12 @@ const ManualEventList = () => {
                     </div>
 
                     <p className="event-description">{event.description}</p>
-                    <p className="event-location">📍 {event.location}</p>
-                    <p className="event-datetime">
-                        🕒 {`${formatDateTime(event.startDate)} – ${formatDateTime(event.endDate)}`}
+                    <p className="event-location">
+                        📍 {event.location?.venue}, {event.location?.city}
                     </p>
+                    <br />
+                    <div>{formatDateTimeRangeMultiline(event.startDate, event.endDate)}</div>
+                    <br />
                     <p className="event-datetime">
                         👥 Attendees: {event.attendees ? event.attendees.length : 0}
                     </p>
