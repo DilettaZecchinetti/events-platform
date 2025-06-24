@@ -44,9 +44,10 @@ const StaffDashboard = () => {
 
     const convertLocalDateTimeToISO = (localDateTime) => {
         if (!localDateTime) return null;
-        const [datePart, timePart] = localDateTime.split("T");
-        return `${datePart}T${timePart}:00`;
+        const local = new Date(localDateTime);
+        return local.toISOString();
     };
+
 
     const formatDateTimeRangeMultiline = (start, end) => {
         if (!start || !end) return "Time not available";
