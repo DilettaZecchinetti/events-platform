@@ -9,6 +9,8 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
 
     const { login } = useUser();
     const navigate = useNavigate();
@@ -23,7 +25,13 @@ const Login = () => {
             if (!user) throw new Error("Login failed");
             login(user);
 
-            navigate("/");
+            setMessage("Login successful! Redirecting...");
+
+            setTimeout(() => {
+                navigate("/");
+            }, 1500);
+
+
         } catch (err) {
             setError("Login failed. Please check your credentials.");
             console.error(err);
@@ -41,6 +49,8 @@ const Login = () => {
             ) : (
                 <div>
                     <h3 className="mb-3 text-center">Login</h3>
+
+                    {message && <div className="alert alert-success text-center">{message}</div>}
                     {error && <div className="alert alert-danger text-center">{error}</div>}
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">

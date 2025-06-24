@@ -29,7 +29,9 @@ export const registerUser = async (req, res) => {
   }
 
   try {
-    const existing = await User.findOne({ email });
+    const emailLower = email.toLowerCase();
+    const existing = await User.findOne({ email: emailLower });
+
     if (existing) {
       return res.status(400).json({ msg: "User already exists" });
     }
@@ -39,7 +41,7 @@ export const registerUser = async (req, res) => {
 
     const user = await User.create({
       name,
-      email,
+      email: emailLower,
       password: hashedPassword,
       role,
     });

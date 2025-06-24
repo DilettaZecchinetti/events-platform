@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { registerUser } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [name, setName] = useState("");
@@ -8,19 +9,35 @@ const Register = () => {
     const [role, setRole] = useState("user");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
         try {
-            await registerUser(name, email, password, role);
+            await registerUser(
+                name.trim(),
+                email.trim(),
+                password.trim(),
+                role
+            );
             setLoading(false);
+            setMessage("Registration successful! Redirecting...");
+
+            setTimeout(() => {
+                navigate("/");
+            }, 1500);
+
+
         } catch (err) {
-            setError("Registration failed. Please try again.");
+            console.error("Error response from server:", err.response?.data);
+            setError(err.response?.data?.msg || "Registration failed. Please try again.");
             setLoading(false);
         }
-    };
+    }
 
     return (
         <div className="container d-flex justify-content-center pt-5">
@@ -32,6 +49,9 @@ const Register = () => {
                 <div>
                     <h3 className="mb-3 text-center">Register</h3>
                     {error && <div className="alert alert-danger text-center">{error}</div>}
+
+                    {message && <div className="alert alert-success text-center">{message}</div>}
+
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
                             <label className="form-label">Name</label>
