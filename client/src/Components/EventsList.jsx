@@ -76,7 +76,9 @@ const EventList = () => {
                 }}
             >
                 <div className="col-md-5">
+                    <label htmlFor="genre-select" className="form-label">Genre</label>
                     <select
+                        id="genre-select"
                         className="form-select"
                         value={genreId}
                         onChange={(e) => setGenreId(e.target.value)}
@@ -90,7 +92,9 @@ const EventList = () => {
                 </div>
 
                 <div className="col-md-5">
+                    <label htmlFor="city-select" className="form-label">City</label>
                     <select
+                        id="city-select"
                         className="form-select"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
@@ -102,6 +106,7 @@ const EventList = () => {
                         ))}
                     </select>
                 </div>
+
 
                 <div className="col-md-2">
                     <button type="submit" className="btn btn-primary w-100">
