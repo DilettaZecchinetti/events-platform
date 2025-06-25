@@ -119,6 +119,11 @@ const StaffDashboard = () => {
             return;
         }
 
+        if (!formData.location.venue || !formData.location.city) {
+            setError("Both venue and city are required.");
+            return;
+        }
+
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
             setError("End date/time must be after start date/time.");
             return;
@@ -128,10 +133,7 @@ const StaffDashboard = () => {
             setError("Start date/time cannot be in the past.");
             return;
         }
-        if (!formData.location.venue || !formData.location.city) {
-            setError("Both venue and city are required.");
-            return;
-        }
+
 
         setLoading(true);
         try {
@@ -171,6 +173,11 @@ const StaffDashboard = () => {
             return;
         }
 
+        if (!formData.location.venue || !formData.location.city) {
+            setError("Both venue and city are required.");
+            return;
+        }
+
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
             setError("End date/time must be after start date/time.");
             return;
@@ -180,10 +187,7 @@ const StaffDashboard = () => {
             setError("Start date/time cannot be in the past.");
             return;
         }
-        if (!formData.location.venue || !formData.location.city) {
-            setError("Both venue and city are required.");
-            return;
-        }
+
 
         setLoading(true);
         try {
