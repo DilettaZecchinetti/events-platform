@@ -75,7 +75,7 @@ const EventList = () => {
                     width: "100%",
                 }}
             >
-                <div className="col-md-5">
+                <div className="form-group">
                     <label htmlFor="genre-select" className="form-label">Genre</label>
                     <select
                         id="genre-select"
@@ -91,7 +91,7 @@ const EventList = () => {
                     </select>
                 </div>
 
-                <div className="col-md-5">
+                <div className="form-group">
                     <label htmlFor="city-select" className="form-label">City</label>
                     <select
                         id="city-select"
@@ -108,7 +108,7 @@ const EventList = () => {
                 </div>
 
 
-                <div className="col-md-2">
+                <div className="form-group">
                     <button type="submit" className="btn btn-primary w-100">
                         Search
                     </button>
