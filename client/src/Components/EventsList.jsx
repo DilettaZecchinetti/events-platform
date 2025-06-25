@@ -5,20 +5,25 @@ import EventCard from "../Components/EventCard.jsx";
 import "../../css/EventsList.css";
 
 const GENRES = [
-    { id: "KnvZfZ7vAv1", name: "R&B" },
+    { id: "KnvZfZ7vAee", name: "R&B" },
     { id: "KnvZfZ7vAeA", name: "Rock" },
-    { id: "KnvZfZ7vAvF", name: "Pop" },
-    { id: "KnvZfZ7vAv6", name: "Hip-Hop" },
+    { id: "KnvZfZ7vAv6", name: "Country" },
     { id: "KnvZfZ7vAvE", name: "Jazz" },
+    { id: "KnvZfZ7vAv1", name: "Hip Pop/Rap" },
+    { id: "KnvZfZ7vAeJ", name: "Dance/Electronic" },
+
 ];
 
 const CITIES = [
     "London",
     "Manchester",
     "Birmingham",
-    "Glasgow",
     "Liverpool",
     "Leeds",
+    "Bristol",
+    "Brighton",
+    "Nottingham",
+    "Leicester",
 ];
 
 const EventList = () => {
