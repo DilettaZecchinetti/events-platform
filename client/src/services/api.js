@@ -2,14 +2,10 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchEvents = async ({
-  genreId = "KnvZfZ7vAv1",
-  city = "",
-} = {}) => {
+export const fetchEvents = async ({ query = "" } = {}) => {
   try {
     const params = {};
-    if (genreId) params.genreId = genreId;
-    if (city) params.city = city;
+    if (query) params.query = query;
 
     const response = await axios.get(`${API_BASE}/api/events`, {
       params,
@@ -19,6 +15,16 @@ export const fetchEvents = async ({
   } catch (err) {
     console.error("Error fetching events:", err);
     throw err;
+  }
+};
+
+export const fetchBannerEvents = async () => {
+  try {
+    const { data } = await axios.get(`${API_BASE}/api/events/banner`);
+    return data;
+  } catch (err) {
+    console.error("Error fetching banner events:", err);
+    return [];
   }
 };
 

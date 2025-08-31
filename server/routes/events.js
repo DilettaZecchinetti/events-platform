@@ -10,6 +10,7 @@ import {
   deleteEvent,
   updateEvent,
   getEventByExternalId,
+  getBannerEvents,
 } from "../controllers/eventsController.js";
 import {
   authenticateUser,
@@ -20,6 +21,7 @@ import {
 const router = express.Router();
 
 router.get("/", getEvents);
+router.get("/banner", getBannerEvents);
 router.get("/manual", getAllManualEvents);
 router.get("/manual/:id", getManualEventById);
 router.get("/ticketmaster/:id", getTicketmasterEventById);

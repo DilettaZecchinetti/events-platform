@@ -3,14 +3,38 @@ import mongoose from "mongoose";
 import { fetchEventById, fetchEvents } from "../utils/ticketmaster.js";
 import { Event } from "../models/Event.js";
 
+const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
+const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
+
 export const getEvents = async (req, res) => {
   try {
-    const genreId = req.query.genreId || "KnvZfZ7vAv1";
-    const city = req.query.city || null;
-    const events = await fetchEvents({ genreId, city });
+    const query = req.query.query || "";
+    const events = await fetchEvents({ keyword: query });
     res.status(200).json(events);
   } catch (err) {
+    console.error("Error in getEvents:", err);
     res.status(500).json({ error: "Failed to fetch events" });
+  }
+};
+
+export const getBannerEvents = async (req, res) => {
+  try {
+    const params = {
+      apikey: TICKETMASTER_API_KEY,
+      countryCode: "GB",
+      size: 10,
+      sort: "date,asc",
+      classificationName: "music",
+    };
+
+    const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
+    res.json(data._embedded?.events || []);
+  } catch (err) {
+    console.error(
+      "Error fetching banner events:",
+      err.response?.data || err.message
+    );
+    res.status(500).json({ error: "Failed to fetch banner events" });
   }
 };
 
@@ -24,10 +48,7 @@ export const getEventById = async (req, res) => {
 
     if (mongoose.Types.ObjectId.isValid(id)) {
       const event = await Event.findById(id).populate("attendees");
-      if (!event) {
-        return res.status(404).json({ error: "Event not found in database" });
-      }
-      return res.status(200).json(event);
+      if (event) return res.status(200).json(event);
     }
 
     const existingEvent = await Event.findOne({
@@ -35,13 +56,24 @@ export const getEventById = async (req, res) => {
       source: "ticketmaster",
     }).populate("attendees");
 
-    if (existingEvent) {
-      return res.status(200).json(existingEvent);
-    }
+    if (existingEvent) return res.status(200).json(existingEvent);
 
     try {
-      const externalEvent = await fetchEventById(id);
-      return res.status(200).json(externalEvent);
+      const { data } = await axios.get(`${BASE_URL}/events/${id}.json`, {
+        params: { apikey: TICKETMASTER_API_KEY },
+      });
+
+      const event = {
+        id: data.id,
+        name: data.name,
+        url: data.url,
+        images: data.images || [],
+        dates: data.dates || {},
+        _embedded: data._embedded || {},
+        source: "ticketmaster",
+      };
+
+      return res.status(200).json(event);
     } catch (err) {
       if (err.response?.status === 404) {
         return res.status(404).json({ error: "Ticketmaster event not found" });
@@ -119,7 +151,6 @@ export const getUserEvents = async (req, res) => {
   }
 };
 
-const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
 const TICKETMASTER_BASE_URL =
   "https://app.ticketmaster.com/discovery/v2/events";
 
