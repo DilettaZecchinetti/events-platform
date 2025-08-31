@@ -10,18 +10,19 @@ const EventBanner = () => {
         const loadEvents = async () => {
             try {
                 const { data } = await axios.get("/api/events/banner");
-                setEvents(data);
+                setEvents(Array.isArray(data) ? data : []);
             } catch (err) {
-                console.error("Error fetching banner events:", err);
+                console.error("Error fetching banner events:", err.response?.data || err.message);
+                setEvents([]);
             }
         };
         loadEvents();
     }, []);
 
-    if (events.length === 0) return null;
+    if (!events.length) return null;
 
     return (
-        <div style={{ backgroundColor: "#222", color: "#fff", padding: "10px 0" }}>
+        <div style={{ backgroundColor: "#222", color: "#fff", padding: "15px 0" }}>
             <Marquee gradient={false} speed={50}>
                 {events.map((event) => (
                     <Link
@@ -46,4 +47,3 @@ const EventBanner = () => {
 };
 
 export default EventBanner;
-
