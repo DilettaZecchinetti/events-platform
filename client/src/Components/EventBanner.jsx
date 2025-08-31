@@ -9,7 +9,8 @@ const EventBanner = () => {
     useEffect(() => {
         const loadEvents = async () => {
             try {
-                const { data } = await axios.get("/api/events/banner");
+                const API_BASE = import.meta.env.VITE_API_BASE_URL;
+                const { data } = await axios.get(`${API_BASE}/api/events/banner`);
                 setEvents(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error("Error fetching banner events:", err.response?.data || err.message);
