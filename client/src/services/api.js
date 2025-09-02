@@ -2,13 +2,14 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchEvents = async ({ query = "" } = {}) => {
+export const fetchEvents = async ({
+  keyword = "",
+  page = 0,
+  size = 20,
+} = {}) => {
   try {
-    const params = {};
-    if (query) params.query = query;
-
     const response = await axios.get(`${API_BASE}/api/events`, {
-      params,
+      params: { query: keyword, page, size },
       withCredentials: true,
     });
     return response.data;

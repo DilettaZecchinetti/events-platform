@@ -9,7 +9,10 @@ const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
 export const getEvents = async (req, res) => {
   try {
     const query = req.query.query || "";
-    const events = await fetchEvents({ keyword: query });
+    const page = parseInt(req.query.page) || 0;
+    const size = parseInt(req.query.size) || 20;
+
+    const events = await fetchEvents({ keyword: query, page, size });
     res.status(200).json(events);
   } catch (err) {
     console.error("Error in getEvents:", err);

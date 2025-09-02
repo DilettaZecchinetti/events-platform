@@ -6,20 +6,29 @@ import axios from "axios";
 const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
 const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
 
-export const fetchEvents = async ({ keyword = "", city = "" } = {}) => {
+export const fetchEvents = async ({
+  keyword = "",
+  city = "",
+  page = 0,
+  size = 20,
+} = {}) => {
   try {
     const params = {
       apikey: TICKETMASTER_API_KEY,
       countryCode: "GB",
       keyword,
       city,
-      size: 200,
+      page,
+      size,
       sort: "date,asc",
       classificationName: "music",
     };
 
     const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
-    return data._embedded?.events || [];
+    return {
+      events: data._embedded?.events || [],
+      page: data.page || { totalPages: 1 },
+    };
   } catch (err) {
     console.error(
       "Error from Ticketmaster:",
