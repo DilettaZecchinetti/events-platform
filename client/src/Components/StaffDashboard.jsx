@@ -15,6 +15,7 @@ const StaffDashboard = () => {
             venue: "",
             city: "",
         },
+        image: null
     });
 
     const [eventIdToEdit, setEventIdToEdit] = useState(null);
@@ -44,10 +45,8 @@ const StaffDashboard = () => {
 
     const convertLocalDateTimeToISO = (localDateTime) => {
         if (!localDateTime) return null;
-        const local = new Date(localDateTime);
-        return local.toISOString();
+        return new Date(localDateTime).toISOString();
     };
-
 
     const formatDateTimeRangeMultiline = (start, end) => {
         if (!start || !end) return "Time not available";
@@ -58,57 +57,33 @@ const StaffDashboard = () => {
         const startDate = new Date(start);
         const endDate = new Date(end);
 
-        const formattedStart = `${startDate.toLocaleDateString('en-GB', optionsDate)} at ${startDate.toLocaleTimeString('en-GB', optionsTime)}`;
-        const formattedEnd = `${endDate.toLocaleDateString('en-GB', optionsDate)} at ${endDate.toLocaleTimeString('en-GB', optionsTime)}`;
-
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <span style={{ marginBottom: 2 }}>🕒 {formattedStart}</span>
-                <small
-                    style={{
-                        fontWeight: 'normal',
-                        color: '#666',
-                        alignSelf: 'center',
-                        marginBottom: 2
-                    }}
-                >
-                    until
-                </small>
-                <span>⏰ {formattedEnd}</span>
+                <span style={{ marginBottom: 2 }}>🕒 {startDate.toLocaleDateString('en-GB', optionsDate)} at {startDate.toLocaleTimeString('en-GB', optionsTime)}</span>
+                <small style={{ fontWeight: 'normal', color: '#666', alignSelf: 'center', marginBottom: 2 }}>until</small>
+                <span>⏰ {endDate.toLocaleDateString('en-GB', optionsDate)} at {endDate.toLocaleTimeString('en-GB', optionsTime)}</span>
             </div>
-
-
         );
     };
-
 
     const resetForm = () => {
         setFormData({
             title: "",
             description: "",
-            location: {
-                venue: "",
-                city: "",
-            },
+            location: { venue: "", city: "" },
             startDateTime: "",
             endDateTime: "",
+            image: null
         });
     };
 
-    const isDateRangeValid = (start, end) => {
-        if (!start || !end) return false;
-        return new Date(start) < new Date(end);
-    };
-
-    const isStartDateInFuture = (start) => {
-        if (!start) return false;
-        return new Date(start) >= new Date();
-    };
-
+    const isDateRangeValid = (start, end) => start && end && new Date(start) < new Date(end);
+    const isStartDateInFuture = (start) => start && new Date(start) >= new Date();
 
     const handleCreate = async () => {
         setError("");
         setMessage("");
+
         if (!formData.title.trim()) {
             setError("Title is required.");
             return;
@@ -134,26 +109,32 @@ const StaffDashboard = () => {
             return;
         }
 
+        if (!formData.image) {  // Ensure image is provided
+            setError("Image is required for manual events.");
+            return;
+        }
 
         setLoading(true);
+
         try {
-            await createEvent({
-                title: formData.title,
-                description: formData.description,
-                location: {
-                    venue: formData.location.venue,
-                    city: formData.location.city,
-                },
-                startDate: convertLocalDateTimeToISO(formData.startDateTime),
-                endDate: convertLocalDateTimeToISO(formData.endDateTime),
-            });
+            const eventFormData = new FormData();
+            eventFormData.append("title", formData.title);
+            eventFormData.append("description", formData.description);
+            eventFormData.append("startDate", convertLocalDateTimeToISO(formData.startDateTime));
+            eventFormData.append("endDate", convertLocalDateTimeToISO(formData.endDateTime));
+            eventFormData.append("city", formData.location.city);
+            eventFormData.append("venue", formData.location.venue);
+            eventFormData.append("source", "manual");
+            eventFormData.append("image", formData.image); // The File object from input
+
+            await createEvent(eventFormData, token);
 
             resetForm();
             setShowForm(false);
             setMessage("Event created successfully.");
             fetchEvents();
         } catch (err) {
-            console.error("Create error:", err.message);
+            console.error("Create error:", err.response?.data || err.message);
             setError("Failed to create event. Please try again.");
         } finally {
             setLoading(false);
@@ -161,50 +142,25 @@ const StaffDashboard = () => {
     };
 
     const handleUpdate = async () => {
-        setError("");
-        setMessage("");
-        if (!formData.title.trim()) {
-            setError("Title is required.");
-            return;
-        }
+        setError(""); setMessage("");
 
-        if (!formData.description.trim()) {
-            setError("Description is required.");
-            return;
-        }
-
-        if (!formData.location.venue || !formData.location.city) {
-            setError("Both venue and city are required.");
-            return;
-        }
-
-        if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) {
-            setError("End date/time must be after start date/time.");
-            return;
-        }
-
-        if (!isStartDateInFuture(formData.startDateTime)) {
-            setError("Start date/time cannot be in the past.");
-            return;
-        }
-
+        if (!formData.title.trim()) { setError("Title is required."); return; }
+        if (!formData.description.trim()) { setError("Description is required."); return; }
+        if (!formData.location.venue || !formData.location.city) { setError("Both venue and city are required."); return; }
+        if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) { setError("End date/time must be after start date/time."); return; }
+        if (!isStartDateInFuture(formData.startDateTime)) { setError("Start date/time cannot be in the past."); return; }
 
         setLoading(true);
         try {
-            await updateEvent(
-                eventIdToEdit,
-                {
-                    title: formData.title,
-                    description: formData.description,
-                    location: {
-                        venue: formData.location.venue,
-                        city: formData.location.city,
-                    },
-                    startDate: convertLocalDateTimeToISO(formData.startDateTime),
-                    endDate: convertLocalDateTimeToISO(formData.endDateTime),
-                },
-                token
-            );
+            const data = new FormData();
+            data.append("title", formData.title);
+            data.append("description", formData.description);
+            data.append("location", JSON.stringify(formData.location));
+            data.append("startDate", convertLocalDateTimeToISO(formData.startDateTime));
+            data.append("endDate", convertLocalDateTimeToISO(formData.endDateTime));
+            if (formData.image) data.append("image", formData.image); // optional for update
+
+            await updateEvent(eventIdToEdit, data, token);
 
             resetForm();
             setEventIdToEdit(null);
@@ -212,31 +168,16 @@ const StaffDashboard = () => {
             setMessage("Event updated successfully.");
             fetchEvents();
         } catch (err) {
-            console.error("Update error:", err.message);
-            if (err.response?.status === 403) {
-                setError(err.response.data.error);
-            } else {
-                setError("Failed to update event. Please try again.");
-            }
-        } finally {
-            setLoading(false);
-        }
+            console.error("Update error:", err);
+            setError(err.response?.data?.message || "Failed to update event. Please try again.");
+        } finally { setLoading(false); }
     };
 
     const handleDelete = async (id) => {
-        setError("");
-        setMessage("");
-        setLoading(true);
-        try {
-            await deleteEvent(id, token);
-            setMessage("Event deleted successfully.");
-            fetchEvents();
-        } catch (err) {
-            console.error("Delete error:", err.message);
-            setError("Failed to delete event. Please try again.");
-        } finally {
-            setLoading(false);
-        }
+        setError(""); setMessage(""); setLoading(true);
+        try { await deleteEvent(id, token); setMessage("Event deleted successfully."); fetchEvents(); }
+        catch (err) { console.error("Delete error:", err); setError("Failed to delete event. Please try again."); }
+        finally { setLoading(false); }
     };
 
     const startEditing = (event) => {
@@ -244,166 +185,39 @@ const StaffDashboard = () => {
         setFormData({
             title: event.title || "",
             description: event.description || "",
-            location: {
-                venue: event.location?.venue || "",
-                city: event.location?.city || "",
-            },
+            location: { venue: event.location?.venue || "", city: event.location?.city || "" },
             startDateTime: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
             endDateTime: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+            image: null
         });
-        setShowForm(true);
-        setError("");
-        setMessage("");
+        setShowForm(true); setError(""); setMessage("");
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleCancel = () => {
-        resetForm();
-        setEventIdToEdit(null);
-        setShowForm(false);
-        setError("");
-        setMessage("");
-    };
+    const handleCancel = () => { resetForm(); setEventIdToEdit(null); setShowForm(false); setError(""); setMessage(""); };
 
     return (
         <div className="container py-5">
             {(showForm || eventIdToEdit) && (
                 <>
                     <h3 className="mb-4 text-center fw-semibold">Staff Event Management</h3>
+                    <form onSubmit={(e) => { e.preventDefault(); eventIdToEdit ? handleUpdate() : handleCreate(); }} noValidate>
+                        <input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required disabled={loading} className="form-control mb-3" />
+                        <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required disabled={loading} className="form-control mb-3" />
+                        <input type="text" placeholder="Venue" value={formData.location.venue} onChange={(e) => setFormData({ ...formData, location: { ...formData.location, venue: e.target.value } })} required disabled={loading} className="form-control mb-3" />
+                        <input type="text" placeholder="City" value={formData.location.city} onChange={(e) => setFormData({ ...formData, location: { ...formData.location, city: e.target.value } })} required disabled={loading} className="form-control mb-3" />
+                        <input type="datetime-local" value={formData.startDateTime} onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })} required disabled={loading} className="form-control mb-3" />
+                        <input type="datetime-local" value={formData.endDateTime} onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })} required disabled={loading} className="form-control mb-3" />
+                        <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })} required={!eventIdToEdit} className="form-control mb-3" />
 
-                    <div>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                eventIdToEdit ? handleUpdate() : handleCreate();
-                            }}
-                            noValidate
-                        >
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-lg"
-                                    placeholder="Title"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    autoComplete="off"
-                                    required
-                                    aria-label="Event Title"
-                                    disabled={loading}
-                                />
-                            </div>
+                        {error && <p className="text-danger">{error}</p>}
+                        {message && <p className="text-success">{message}</p>}
 
-                            <div className="mb-4">
-                                <textarea
-                                    className="form-control form-control-lg"
-                                    placeholder="Description"
-                                    rows={4}
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    required
-                                    aria-label="Event Description"
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-lg"
-                                    placeholder="Venue"
-                                    value={formData.location.venue}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            location: { ...formData.location, venue: e.target.value },
-                                        })
-                                    }
-                                    autoComplete="off"
-                                    required
-                                    aria-label="Event Venue"
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-lg"
-                                    placeholder="City"
-                                    value={formData.location.city}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            location: { ...formData.location, city: e.target.value },
-                                        })
-                                    }
-                                    autoComplete="off"
-                                    required
-                                    aria-label="Event City"
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <div className="row g-4 mb-4">
-                                <div className="col-md-6">
-                                    <label htmlFor="startDateTime" className="form-label fw-semibold">
-                                        Start Date & Time
-                                    </label>
-                                    <input
-                                        id="startDateTime"
-                                        type="datetime-local"
-                                        className="form-control form-control-lg"
-                                        value={formData.startDateTime}
-                                        onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })}
-                                        required
-                                        aria-describedby="startDateTimeHelp"
-                                        disabled={loading}
-                                    />
-                                    <div id="startDateTimeHelp" className="form-text">
-                                        When the event starts
-                                    </div>
-                                </div>
-
-                                <div className="col-md-6">
-                                    <label htmlFor="endDateTime" className="form-label fw-semibold">
-                                        End Date & Time
-                                    </label>
-                                    <input
-                                        id="endDateTime"
-                                        type="datetime-local"
-                                        className="form-control form-control-lg"
-                                        value={formData.endDateTime}
-                                        onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
-                                        required
-                                        aria-describedby="endDateTimeHelp"
-                                        disabled={loading}
-                                    />
-                                    <div id="endDateTimeHelp" className="form-text">
-                                        When the event ends
-                                    </div>
-                                </div>
-
-                                {error && <p className="form-error text-danger mt-2">{error}</p>}
-                                {message && <p className="form-message text-success mt-2">{message}</p>}
-                            </div>
-
-                            <div className="d-flex gap-3">
-                                <button type="submit" className="btn btn-primary btn-lg flex-grow-1 shadow-sm" disabled={loading}>
-                                    {loading ? (eventIdToEdit ? "Updating..." : "Creating...") : eventIdToEdit ? "Update Event" : "Create Event"}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary btn-lg flex-grow-1"
-                                    onClick={handleCancel}
-                                    disabled={loading}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
+                        <div className="d-flex gap-3">
+                            <button type="submit" className="btn btn-primary flex-grow-1" disabled={loading}>{loading ? (eventIdToEdit ? "Updating..." : "Creating...") : eventIdToEdit ? "Update Event" : "Create Event"}</button>
+                            <button type="button" className="btn btn-outline-secondary flex-grow-1" onClick={handleCancel} disabled={loading}>Cancel</button>
+                        </div>
+                    </form>
                     <hr />
                 </>
             )}
@@ -412,65 +226,31 @@ const StaffDashboard = () => {
 
             {!showForm && (
                 <div className="text-center mb-4">
-                    <button
-                        className="btn btn-primary btn-lg"
-                        onClick={() => {
-                            resetForm();
-                            setEventIdToEdit(null);
-                            setShowForm(true);
-                            setError("");
-                            setMessage("");
-                        }}
-                        disabled={loading}
-                    >
-                        + Create new event
-                    </button>
+                    <button className="btn btn-primary btn-lg" onClick={() => { resetForm(); setEventIdToEdit(null); setShowForm(true); setError(""); setMessage(""); }} disabled={loading}>+ Create new event</button>
                 </div>
             )}
 
-            {loading && !showForm ? (
-                <p className="text-center text-muted">Loading events...</p>
-            ) : events.length === 0 ? (
-                <p className="text-muted text-center fst-italic">No events created yet.</p>
-            ) : (
-                <ul className="event-list">
-                    {events.map((event) => (
-                        <li
-                            key={event._id}
-                            className="event-card"
-                            role="listitem"
-                            tabIndex={0}
-                            aria-label={`Event titled ${event.title}`}
-                        >
-                            <div className="mt-3 d-flex gap-2 mb-4 justify-content-end">
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => startEditing(event)}
-                                    disabled={loading}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-outline-danger"
-                                    onClick={() => handleDelete(event._id)}
-                                    disabled={loading}
-                                >
-                                    Delete
-                                </button>
-                            </div>
-
-                            <h5>{event.title}</h5>
-                            <p>{event.description}</p>
-                            <p>📍 {event.location?.venue}, {event.location?.city}</p>
-                            <div>{formatDateTimeRangeMultiline(event.startDate, event.endDate)}</div>
-
-                        </li>
-                    ))}
-                </ul>
-            )}
+            {loading && !showForm ? <p className="text-center text-muted">Loading events...</p> :
+                events.length === 0 ? <p className="text-muted text-center fst-italic">No events created yet.</p> :
+                    <ul className="event-list">
+                        {events.map((event) => (
+                            <li key={event._id} className="event-card">
+                                <div className="mt-3 d-flex gap-2 mb-4 justify-content-end">
+                                    <button className="btn btn-sm btn-outline-primary" onClick={() => startEditing(event)} disabled={loading}>Edit</button>
+                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(event._id)} disabled={loading}>Delete</button>
+                                </div>
+                                <h5>{event.title}</h5>
+                                <p>{event.description}</p>
+                                <p>📍 {event.location?.venue}, {event.location?.city}</p>
+                                <div>{formatDateTimeRangeMultiline(event.startDate, event.endDate)}</div>
+                                {event.image && <img src={`http://localhost:5000/uploads/${event.image}`} alt={event.title} style={{ maxWidth: "100%", marginTop: "10px" }} />}
+                            </li>
+                        ))}
+                    </ul>
+            }
         </div>
-
     );
 };
 
 export default StaffDashboard;
+

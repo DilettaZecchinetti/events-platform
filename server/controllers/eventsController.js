@@ -98,42 +98,57 @@ export const getEventById = async (req, res) => {
 
 export const createEvent = async (req, res) => {
   try {
-    const { startDate, endDate, externalId, ...rest } = req.body;
-
-    if (!externalId) {
-      return res.status(400).json({ message: "externalId is required" });
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: user not found on request" });
     }
 
-    let existingEvent = await Event.findOne({ externalId });
+    const source = req.body.source || "manual";
 
-    if (existingEvent) {
-      return res.status(200).json(existingEvent);
+    // Require image for manual events
+    if (source === "manual" && !req.file) {
+      return res
+        .status(400)
+        .json({ message: "Image is required for manual events" });
     }
 
-    const resolvedStartDate = startDate || new Date().toISOString();
-    const resolvedEndDate =
-      endDate ||
-      new Date(
-        new Date(resolvedStartDate).getTime() + 2 * 60 * 60 * 1000
-      ).toISOString();
+    // Access text fields from req.body (FormData fields are strings)
+    const title = req.body.title;
+    const description = req.body.description;
+    const venue = req.body.venue;
+    const city = req.body.city;
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+    const externalId = req.body.externalId;
+
+    if (!title || !description || !venue || !city || !startDate || !endDate) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const finalExternalId =
+      externalId || (source === "manual" ? uuidv4() : undefined);
 
     const newEventData = {
-      startDate: resolvedStartDate,
-      endDate: resolvedEndDate,
+      title,
+      description,
+      startDate,
+      endDate,
+      location: { venue, city },
       createdBy: req.user._id,
-      source: "manual",
-      externalId,
-      ...rest,
+      source,
+      externalId: finalExternalId,
+      image: req.file?.filename,
     };
 
     const newEvent = await Event.create(newEventData);
-
     res.status(201).json(newEvent);
   } catch (err) {
-    console.error("Create event error:", err.message);
-    res
-      .status(400)
-      .json({ message: "Failed to save event", error: err.message });
+    console.error("Create event error:", err);
+    res.status(400).json({
+      message: "Failed to save event",
+      error: err.message,
+    });
   }
 };
 

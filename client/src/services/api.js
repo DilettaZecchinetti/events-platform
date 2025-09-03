@@ -121,18 +121,22 @@ export const getOAuthUrl = async () => {
   return response.data.url;
 };
 
-export const createEvent = async (eventData) => {
+export const createEvent = async (formData, token) => {
   try {
     const response = await axios.post(
       `${API_BASE}/api/staff/events/`,
-      eventData,
+      formData,
       {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
         withCredentials: true,
       }
     );
     return response.data;
   } catch (err) {
-    console.error("Create error:", err);
+    console.error("Create event error:", err);
     throw err;
   }
 };

@@ -18,21 +18,16 @@ export const createEvent = async (req, res) => {
       ...rest
     } = req.body;
 
+    if (source === "manual" && !req.file) {
+      return res
+        .status(400)
+        .json({ message: "Image is required for manual events" });
+    }
+
     const finalExternalId =
       externalId || (source === "manual" ? uuidv4() : undefined);
-
-    if (!finalExternalId) {
+    if (!finalExternalId)
       return res.status(400).json({ message: "externalId is required" });
-    }
-
-    if (source !== "manual") {
-      const existingEvent = await Event.findOne({
-        externalId: finalExternalId,
-      });
-      if (existingEvent) {
-        return res.status(200).json(existingEvent);
-      }
-    }
 
     const resolvedStartDate = startDate || new Date().toISOString();
     const resolvedEndDate =
@@ -48,17 +43,20 @@ export const createEvent = async (req, res) => {
       source,
       externalId: finalExternalId,
       location: city ? { city } : undefined,
+      image: req.file
+        ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+        : undefined,
       ...rest,
     };
 
     const newEvent = await Event.create(newEventData);
+
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Create event error:", err);
-    res.status(400).json({
-      message: "Failed to save event",
-      error: err.message,
-    });
+    res
+      .status(400)
+      .json({ message: "Failed to save event", error: err.message });
   }
 };
 

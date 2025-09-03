@@ -26,12 +26,10 @@ const EventDetail = () => {
     const navigate = useNavigate();
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    // Keep latest event in ref
     useEffect(() => {
         eventRef.current = event;
     }, [event]);
 
-    // Load event by ID
     useEffect(() => {
         const loadEvent = async () => {
             try {

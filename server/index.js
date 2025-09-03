@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import path from "path";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -34,6 +35,7 @@ app.use("/api/events", eventsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/staff/events", staffRouter);
 app.use("/api/calendar", calendarRouter);
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(errorHandler);
 
