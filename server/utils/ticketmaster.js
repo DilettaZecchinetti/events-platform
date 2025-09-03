@@ -13,18 +13,22 @@ export const fetchEvents = async ({
   size = 20,
 } = {}) => {
   try {
+    const startDateTime = new Date().toISOString().split(".")[0] + "Z";
+
     const params = {
       apikey: TICKETMASTER_API_KEY,
       countryCode: "GB",
-      keyword,
-      city,
+      startDateTime,
       page,
       size,
       sort: "date,asc",
       classificationName: "music",
+      ...(keyword && { keyword }),
+      ...(city && { city }),
     };
 
     const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
+
     return {
       events: data._embedded?.events || [],
       page: data.page || { totalPages: 1 },
