@@ -51,7 +51,10 @@ export const getEventById = async (req, res) => {
 
     if (mongoose.Types.ObjectId.isValid(id)) {
       const event = await Event.findById(id).populate("attendees");
-      if (event) return res.status(200).json(event);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found in database" });
+      }
+      return res.status(200).json(event);
     }
 
     const existingEvent = await Event.findOne({
@@ -59,35 +62,34 @@ export const getEventById = async (req, res) => {
       source: "ticketmaster",
     }).populate("attendees");
 
-    if (existingEvent) return res.status(200).json(existingEvent);
-
-    try {
-      const { data } = await axios.get(`${BASE_URL}/events/${id}.json`, {
-        params: { apikey: TICKETMASTER_API_KEY },
-      });
-
-      const event = {
-        id: data.id,
-        name: data.name,
-        url: data.url,
-        images: data.images || [],
-        dates: data.dates || {},
-        _embedded: data._embedded || {},
-        source: "ticketmaster",
-      };
-
-      return res.status(200).json(event);
-    } catch (err) {
-      if (err.response?.status === 404) {
-        return res.status(404).json({ error: "Ticketmaster event not found" });
-      }
-      if (err.response?.status === 429) {
-        return res.status(429).json({
-          error: "Too many requests to Ticketmaster API, please try later",
-        });
-      }
-      throw err;
+    if (existingEvent) {
+      return res.status(200).json(existingEvent);
     }
+
+    const externalEvent = await fetchEventById(id);
+
+    const normalized = {
+      id: externalEvent.id,
+      externalId: externalEvent.id,
+      title: externalEvent.name,
+      url: externalEvent.url || "",
+      image: externalEvent.images?.[0]?.url || "",
+      startDate:
+        externalEvent.dates?.start?.dateTime ||
+        externalEvent.dates?.start?.localDate ||
+        null,
+      endDate: externalEvent.dates?.end?.dateTime || null,
+      venue: externalEvent._embedded?.venues?.[0]?.name || "",
+      city: externalEvent._embedded?.venues?.[0]?.city?.name || "",
+      genre: externalEvent.classifications?.[0]?.genre?.name || "",
+      promoter: externalEvent.promoter?.description || "",
+      info: externalEvent.info || "",
+      pleaseNote: externalEvent.pleaseNote || "",
+      attendees: [],
+      source: "ticketmaster",
+    };
+
+    return res.status(200).json(normalized);
   } catch (err) {
     console.error("Error in getEventById:", err.message);
     return res.status(500).json({ error: "Failed to fetch event by id" });
