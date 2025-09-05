@@ -12,15 +12,13 @@ import EventList from './Components/EventsList';
 import { useUser } from "./context/UserContext";
 import EventBanner from "./Components/EventBanner";
 
-
 function App() {
   const { user } = useUser();
 
   return (
     <Router>
       <Header />
-      <EventBanner />
-
+      {user?.role === "user" && <EventBanner />}
       <Routes>
         {user?.role === "user" ? (
           <Route path="/" element={<EventsList />} />

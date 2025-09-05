@@ -15,6 +15,7 @@ export const createEvent = async (req, res) => {
       externalId,
       source = "manual",
       city,
+      venue,
       ...rest
     } = req.body;
 
@@ -42,7 +43,7 @@ export const createEvent = async (req, res) => {
       createdBy: req.user._id,
       source,
       externalId: finalExternalId,
-      location: city ? { city } : undefined,
+      location: { city, venue },
       image: req.file
         ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
         : undefined,
@@ -62,9 +63,15 @@ export const createEvent = async (req, res) => {
 
 export const updateEvent = async (req, res) => {
   try {
+    const { city, venue, ...rest } = req.body;
+    const updateData = {
+      ...rest,
+      location: { city, venue },
+    };
+
     const event = await Event.findOneAndUpdate(
       { _id: req.params.id, createdBy: req.user._id },
-      req.body,
+      updateData,
       { new: true }
     );
 
