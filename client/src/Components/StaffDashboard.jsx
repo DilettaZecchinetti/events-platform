@@ -105,18 +105,11 @@ const StaffDashboard = () => {
     const handleUpdate = async () => {
         setError(""); setMessage("");
 
-        const eventStart = new Date(formData.startDateTime);
-        const now = new Date();
-        if (eventStart < now) {
-            return setError("Cannot update an event that has already occurred.");
-        }
-
         if (!formData.title.trim()) return setError("Title is required.");
         if (!formData.description.trim()) return setError("Description is required.");
         if (!formData.location.venue || !formData.location.city) return setError("Venue and city required.");
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) return setError("End must be after start.");
         if (!isStartDateInFuture(formData.startDateTime)) return setError("Start cannot be in the past.");
-
 
         setLoading(true);
         try {
@@ -157,6 +150,14 @@ const StaffDashboard = () => {
     };
 
     const startEditing = (event) => {
+        const eventStart = new Date(event.startDate);
+        const now = new Date();
+
+        if (eventStart < now) {
+            setError("Cannot edit an event that has already occurred.");
+            return;
+        }
+
         setEventIdToEdit(event._id);
         setFormData({
             title: event.title || "",
@@ -174,7 +175,6 @@ const StaffDashboard = () => {
 
     return (
         <div className="dashboard-container">
-
             {(showForm || eventIdToEdit) && (
                 <div className="event-form-container">
                     <h3>{eventIdToEdit ? "Edit Event" : "Create Event"}</h3>
@@ -204,19 +204,32 @@ const StaffDashboard = () => {
                 {loading && !showForm ? <p>Loading events...</p> :
                     events.length === 0 ? <p>No events created yet.</p> :
                         <ul className="event-list">
-                            {events.map(event => (
-                                <li key={event._id} className="event-card">
-                                    <div className="event-actions">
-                                        <button onClick={() => startEditing(event)}>Edit</button>
-                                        <button onClick={() => handleDelete(event._id)}>Delete</button>
-                                    </div>
-                                    <img src={event.image || "/placeholder.jpg"} alt={event.title} className="event-image" />
-                                    <h5>{event.title}</h5>
-                                    <p>{event.description}</p>
-                                    <p>📍 {event.location?.venue}, {event.location?.city}</p>
-                                    {formatDateTimeRangeMultiline(event.startDate, event.endDate)}
-                                </li>
-                            ))}
+                            {events.map(event => {
+                                const isPast = new Date(event.startDate) < new Date();
+                                return (
+                                    <li key={event._id} className="event-card">
+                                        <div className="event-actions">
+                                            <button
+                                                onClick={() => startEditing(event)}
+                                                disabled={isPast}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(event._id)}
+                                                disabled={isPast}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                        <img src={event.image || "/placeholder.jpg"} alt={event.title} className="event-image" />
+                                        <h5>{event.title}</h5>
+                                        <p>{event.description}</p>
+                                        <p>📍 {event.location?.venue}, {event.location?.city}</p>
+                                        {formatDateTimeRangeMultiline(event.startDate, event.endDate)}
+                                    </li>
+                                );
+                            })}
                         </ul>
                 }
             </div>
@@ -225,5 +238,3 @@ const StaffDashboard = () => {
 };
 
 export default StaffDashboard;
-
-
