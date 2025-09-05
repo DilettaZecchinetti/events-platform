@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import express from "express";
 import path from "path";
@@ -35,7 +38,7 @@ app.use("/api/events", eventsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/staff/events", staffRouter);
 app.use("/api/calendar", calendarRouter);
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(errorHandler);
 

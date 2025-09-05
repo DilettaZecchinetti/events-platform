@@ -27,8 +27,9 @@ export const createEvent = async (req, res) => {
 
     const finalExternalId =
       externalId || (source === "manual" ? uuidv4() : undefined);
-    if (!finalExternalId)
+    if (!finalExternalId) {
       return res.status(400).json({ message: "externalId is required" });
+    }
 
     const resolvedStartDate = startDate || new Date().toISOString();
     const resolvedEndDate =
@@ -64,10 +65,17 @@ export const createEvent = async (req, res) => {
 export const updateEvent = async (req, res) => {
   try {
     const { city, venue, ...rest } = req.body;
+
     const updateData = {
       ...rest,
       location: { city, venue },
     };
+
+    if (req.file) {
+      updateData.image = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+    }
 
     const event = await Event.findOneAndUpdate(
       { _id: req.params.id, createdBy: req.user._id },
@@ -84,7 +92,7 @@ export const updateEvent = async (req, res) => {
 
     res.json(event);
   } catch (err) {
-    console.error(err);
+    console.error("Update event error:", err);
     res.status(500).json({ msg: "Failed to update event" });
   }
 };
