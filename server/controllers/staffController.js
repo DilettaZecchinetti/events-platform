@@ -38,6 +38,12 @@ export const createEvent = async (req, res) => {
         new Date(resolvedStartDate).getTime() + 2 * 60 * 60 * 1000
       ).toISOString();
 
+    const host =
+      process.env.VITE_API_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const imageUrl = req.file
+      ? `${host}/uploads/${req.file.filename}`
+      : undefined;
+
     const newEventData = {
       startDate: resolvedStartDate,
       endDate: resolvedEndDate,
@@ -45,9 +51,7 @@ export const createEvent = async (req, res) => {
       source,
       externalId: finalExternalId,
       location: { city, venue },
-      image: req.file
-        ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
-        : undefined,
+      image: imageUrl,
       ...rest,
     };
 
@@ -71,10 +75,10 @@ export const updateEvent = async (req, res) => {
       location: { city, venue },
     };
 
+    const host =
+      process.env.VITE_API_BASE_URL || `${req.protocol}://${req.get("host")}`;
     if (req.file) {
-      updateData.image = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`;
+      updateData.image = `${host}/uploads/${req.file.filename}`;
     }
 
     const event = await Event.findOneAndUpdate(
