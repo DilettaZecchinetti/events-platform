@@ -134,40 +134,93 @@ const ManualEventList = () => {
     );
 
     return (
-        <div className="manual-events container my-4">
-            <section className="mb-5">
-                <h3 className="mb-3">Upcoming Events</h3>
-                {upcomingEvents.length === 0 ? <p>No upcoming events available.</p> : renderEventList(upcomingEvents)}
-            </section>
+        <>
+            <div
+                style={{
+                    maxWidth: "90%",
+                    width: "100%",
+                    margin: "40px auto",
+                    textAlign: "center",
+                    lineHeight: "1.6",
+                    color: "#1F2937",
+                    padding: "0 20px",
+                    boxSizing: "border-box",
+                }}
+            >
+                <h3
+                    style={{
+                        marginBottom: "12px",
+                        fontSize: "clamp(1.5rem, 4vw, 1.75rem)",
+                        fontWeight: "600",
+                        position: "relative",
+                        display: "inline-block",
+                    }}
+                >
+                    Specially Curated Events by Our Expert Team
+                    <span
+                        style={{
+                            display: "block",
+                            height: "3px",
+                            width: "60px",
+                            backgroundColor: "#4F46E5",
+                            marginTop: "6px",
+                            borderRadius: "2px",
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                        }}
+                    ></span>
+                </h3>
 
-            <section className="my-4">
-                <div className="text-center mt-5">
-                    <Button
-                        variant="outline-secondary"
-                        onClick={() => setShowPastEvents((prev) => !prev)}
-                    >
-                        {showPastEvents ? "Hide Past Events" : "Show Past Events"}
-                    </Button>
+                <p
+                    style={{
+                        fontSize: "clamp(1rem, 2.5vw, 1.125rem)",
+                        marginTop: "20px",
+                        lineHeight: "1.8",
+                        textAlign: "justify",
+                        textAlignLast: "center",
+                        color: "#1F2937",
+                    }}
+                >
+                    At the Events Platform, we believe that exceptional experiences stem from intentional design and meticulous planning.<br />
+                    Our staff doesn't just organize events; we craft immersive journeys that resonate, inspire, and leave lasting impressions.
+                </p>
+            </div>
 
-                </div>
-                {showPastEvents && (
 
-                    <h4 className="mb-4 text-center text-secondary pt-4">
-                        Past Events:
-                    </h4>
-                )}
+            <div className="manual-events container my-4">
+                <section className="mb-5">
+                    {upcomingEvents.length === 0 ? <p>No upcoming events available.</p> : renderEventList(upcomingEvents)}
+                </section>
 
-                {showPastEvents && (
-                    pastEvents.length === 0 ? (
-                        <p>No past events available.</p>
-                    ) : (
-                        renderEventList(pastEvents)
-                    )
-                )}
-            </section>
+                <section className="my-4">
+                    <div className="text-center mt-5">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => setShowPastEvents((prev) => !prev)}
+                        >
+                            {showPastEvents ? "Hide Past Events" : "Show Past Events"}
+                        </Button>
+                    </div>
 
-        </div>
+                    {showPastEvents && (
+                        <h4 className="mb-4 text-center text-secondary pt-4">
+                            Past Events:
+                        </h4>
+                    )}
+
+                    {showPastEvents && (
+                        pastEvents.length === 0 ? (
+                            <p>No past events available.</p>
+                        ) : (
+                            renderEventList(pastEvents)
+                        )
+                    )}
+                </section>
+            </div>
+        </>
     );
+
+
 };
 
 export default ManualEventList;
