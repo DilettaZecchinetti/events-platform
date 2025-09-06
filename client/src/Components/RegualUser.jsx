@@ -13,7 +13,15 @@ const RegularUser = () => {
         const load = async () => {
             try {
                 const data = await fetchMyEvents();
-                setEvents(Array.isArray(data) ? data : []);
+                const eventsArray = Array.isArray(data) ? data : [];
+
+                eventsArray.sort((a, b) => {
+                    const dateA = a.startDate ? new Date(a.startDate).getTime() : Infinity;
+                    const dateB = b.startDate ? new Date(b.startDate).getTime() : Infinity;
+                    return dateA - dateB;
+                });
+
+                setEvents(eventsArray);
             } catch (err) {
                 console.error("Error loading my events:", err);
             } finally {
@@ -22,6 +30,7 @@ const RegularUser = () => {
         };
         load();
     }, []);
+
 
     if (loading) {
         return (
