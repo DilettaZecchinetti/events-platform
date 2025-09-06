@@ -51,7 +51,7 @@ const EventList = () => {
                         background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
                         color: "#fff",
                         borderRadius: "15px",
-                        padding: "50px 20px",
+                        padding: "30px 20px",
                         textAlign: "center",
                         boxShadow: "0 6px 15px rgba(0,0,0,0.15)",
                         position: "relative",
@@ -62,7 +62,7 @@ const EventList = () => {
                         <h1
                             className="banner-tagline"
                             style={{
-                                fontSize: "2.5rem",
+                                fontSize: "2rem",
                                 fontWeight: "900",
                                 marginBottom: "15px",
                                 lineHeight: "1.2",
