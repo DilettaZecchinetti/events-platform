@@ -11,6 +11,7 @@ import ManualEventList from './Components/ManualEventsList';
 import EventList from './Components/EventsList';
 import { useUser } from "./context/UserContext";
 import EventBanner from "./Components/EventBanner";
+import RegularUser from './Components/RegualUser';
 
 function App() {
   const { user } = useUser();
@@ -24,7 +25,7 @@ function App() {
           <Route path="/" element={<EventsList />} />
         ) : null}
         <Route path="/events/:id" element={<EventDetail />} />
-
+        <Route path="/my-events" element={<RegularUser />} />
         <Route path="/staff-events" element={<ManualEventList />} />
         <Route
           path="/"

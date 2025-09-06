@@ -67,14 +67,49 @@ h3 {
 
 .event-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-  gap: 30px; 
+  grid-template-columns: repeat(3, minmax(0, 1fr)); 
+  gap: 30px;
   padding: 0;
   list-style: none;
-  justify-content: center; 
   margin: 0 auto;
-  max-width: 1400px; 
+  max-width: 1200px; 
+  box-sizing: border-box;
 }
+
+.my-event-list {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important; 
+  gap: 30px !important;
+  list-style: none !important;
+  margin: 0 auto !important;
+  max-width: 1200px !important; 
+}
+
+
+@media (max-width: 1024px) {
+  .event-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
+  }
+}
+
+@media (max-width: 600px) {
+  .event-list {
+    grid-template-columns: 1fr; 
+  }
+}
+
+@media (max-width: 1024px) {
+  .my-event-list {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .my-event-list {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 
 ul {
   border-left: 1px;
@@ -167,24 +202,7 @@ ul {
   margin: 2px 0;
 }
 
-@media (min-width: 600px) {
-  .event-list {
-    grid-template-columns: repeat(2, 1fr); 
-     justify-items: center; 
-  }
-}
 
-@media (min-width: 1024px) {
-  .event-list {
-    grid-template-columns: repeat(3, 1fr); 
-  }
-}
-
-@media (min-width: 1400px) {
-  .event-list {
-    grid-template-columns: repeat(4, 1fr); 
-  }
-}
 
 form {
   max-width: 720px;

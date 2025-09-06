@@ -11,6 +11,7 @@ import {
   updateEvent,
   getEventByExternalId,
   getBannerEvents,
+  getMyEvents,
 } from "../controllers/eventsController.js";
 import {
   authenticateUser,
@@ -26,7 +27,9 @@ router.get("/manual", getAllManualEvents);
 router.get("/manual/:id", getManualEventById);
 router.get("/ticketmaster/:id", getTicketmasterEventById);
 router.get("/external/:externalId", authenticateUser, getEventByExternalId);
+router.get("/my-events", authenticateUser, getMyEvents);
 router.get("/:id", getEventById);
+
 router.post("/", authenticateUser, isAuthenticated, createEvent);
 router.post("/:id/signup", authenticateUser, isAuthenticated, signupForEvent);
 

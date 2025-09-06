@@ -98,9 +98,6 @@ export const getEventById = async (req, res) => {
 };
 
 export const createEvent = async (req, res) => {
-  console.log("req.body:", req.body);
-  console.log("req.file:", req.file);
-
   try {
     if (!req.user || !req.user._id) {
       return res
@@ -355,5 +352,19 @@ export const getEventByExternalId = async (req, res) => {
   } catch (err) {
     console.error("Error fetching event by externalId:", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getMyEvents = async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const events = await Event.find({ attendees: req.user._id }).lean();
+    res.json(events);
+  } catch (err) {
+    console.error("getMyEvents error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };

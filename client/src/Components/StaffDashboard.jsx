@@ -229,7 +229,7 @@ const StaffDashboard = () => {
                 )}
                 {loading && !showForm ? <p>Loading events...</p> :
                     events.length === 0 ? <p>No events created yet.</p> :
-                        <ul className="event-list">
+                        <ul className="event-list my-event-list">
                             {events.map(event => {
                                 const isPast = new Date(event.startDate) < new Date();
                                 return (
@@ -250,9 +250,10 @@ const StaffDashboard = () => {
                                         </div>
                                         <img src={event.image || "/placeholder.jpg"} alt={event.title} className="event-image" />
                                         <h5>{event.title}</h5>
-                                        <p>{event.description}</p>
-                                        <p>📍 {event.location?.venue}, {event.location?.city}</p>
+                                        <p style={{ marginBottom: '10px' }}>{event.description}</p>
+                                        <p style={{ marginBottom: '10px' }}>📍 {event.location?.venue}, {event.location?.city}</p>
                                         {formatDateTimeRangeMultiline(event.startDate, event.endDate)}
+                                        <p>Attendees: {event.attendees?.length || 0}</p>
                                     </li>
                                 );
                             })}

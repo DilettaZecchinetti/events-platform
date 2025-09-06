@@ -202,3 +202,10 @@ export const logoutUser = async () => {
     credentials: "include",
   });
 };
+
+export const fetchMyEvents = async () => {
+  const { data } = await axios.get(`${API_BASE}/api/events/my-events`, {
+    withCredentials: true,
+  });
+  return data;
+};
