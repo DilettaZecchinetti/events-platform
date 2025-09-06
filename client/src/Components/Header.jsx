@@ -37,9 +37,9 @@ function Header() {
 
                     {user?.role === "staff" && (
                         <>
-                            <Link to="/events" className="btn btn-outline-primary me-2">
+                            {/* <Link to="/events" className="btn btn-outline-primary me-2">
                                 Events
-                            </Link>
+                            </Link> */}
                             <Link to="/staff-dashboard" className="btn btn-outline-primary me-2">
                                 Your Events
                             </Link>

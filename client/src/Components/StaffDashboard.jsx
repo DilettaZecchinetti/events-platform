@@ -175,6 +175,32 @@ const StaffDashboard = () => {
 
     return (
         <div className="dashboard-container">
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100px",
+                    width: "100%",
+                    maxWidth: "12000px",
+                    backgroundColor: "#f0f8ff",
+                    borderRadius: "8px",
+                    textAlign: "center",
+                    margin: "20px auto",
+                    padding: "10px 15px",
+                    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+                }}
+            >
+                <h2 style={{ fontSize: "1.2rem", marginBottom: "5px", color: "#333" }}>
+                    Welcome to Event Platform Dashboard
+                </h2>
+                <p style={{ fontSize: "0.9rem", color: "#555", margin: 0 }}>
+                    Manage your events, check attendees, and keep everything organized!
+                </p>
+            </div>
+
+
             {(showForm || eventIdToEdit) && (
                 <div className="event-form-container">
                     <h3>{eventIdToEdit ? "Edit Event" : "Create Event"}</h3>

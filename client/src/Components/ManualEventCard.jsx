@@ -41,9 +41,11 @@ const ManualEventCard = ({
                             timeZone: "Europe/London",
                         })}
                     </Card.Text>
-                    <Card.Text className="text-secondary">
-                        {event.location?.venue}, {event.location?.city}
+                    <Card.Text className="text-black mb-4" style={{ fontSize: "1rem", fontStyle: "italic", margin: "0.25rem 0" }}>{event.description}</Card.Text>
+                    <Card.Text className="text-secondary" style={{ marginTop: "0.5 rem" }}>
+                        📍 {event.location?.venue}, {event.location?.city}
                     </Card.Text>
+
                 </div>
 
                 <div className="mt-3 d-flex flex-column gap-2">
