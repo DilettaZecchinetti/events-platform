@@ -40,10 +40,73 @@ const EventList = () => {
     };
 
     return (
+
+
         <div className="container my-4" style={{ maxWidth: "1500px" }}>
-            {/* <h2 className="mb-3 mt-5">
-                {user ? `Welcome back, ${user.name ?? "User"}!` : "Not logged in"}
-            </h2> */}
+
+            <div className="container my-5" style={{ maxWidth: "1500px" }}>
+                <div
+                    className="banner-container"
+                    style={{
+                        background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
+                        color: "#fff",
+                        borderRadius: "15px",
+                        padding: "50px 20px",
+                        textAlign: "center",
+                        boxShadow: "0 6px 15px rgba(0,0,0,0.15)",
+                        position: "relative",
+                        overflow: "hidden",
+                    }}
+                >
+                    <div className="banner-content">
+                        <h1
+                            className="banner-tagline"
+                            style={{
+                                fontSize: "2.5rem",
+                                fontWeight: "900",
+                                marginBottom: "15px",
+                                lineHeight: "1.2",
+                            }}
+                        >
+                            Explore. Sign Up. Celebrate.
+                        </h1>
+                        <p
+                            className="banner-subtext"
+                            style={{
+                                fontSize: "1.1rem",
+                                fontWeight: "500",
+                                maxWidth: "700px",
+                                margin: "0 auto",
+                            }}
+                        >
+                            Find amazing events near you and join the fun!
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "-40px",
+                            right: "-40px",
+                            width: "150px",
+                            height: "150px",
+                            backgroundColor: "rgba(255,255,255,0.1)",
+                            borderRadius: "50%",
+                        }}
+                    ></div>
+                    <div
+                        style={{
+                            position: "absolute",
+                            bottom: "-50px",
+                            left: "-50px",
+                            width: "200px",
+                            height: "200px",
+                            backgroundColor: "rgba(255,255,255,0.08)",
+                            borderRadius: "50%",
+                        }}
+                    ></div>
+                </div>
+            </div>
 
             <form onSubmit={handleSearch} className="mb-4" style={{ padding: 0, paddingTop: 0 }}>
                 <div className="input-group">

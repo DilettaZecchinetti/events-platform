@@ -10,7 +10,7 @@ import StaffDashboard from './Components/StaffDashboard';
 import ManualEventList from './Components/ManualEventsList';
 import EventList from './Components/EventsList';
 import { useUser } from "./context/UserContext";
-import EventBanner from "./Components/EventBanner";
+// import EventBanner from "./Components/EventBanner";
 import RegularUser from './Components/RegualUser';
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
   return (
     <Router>
       <Header />
-      {user?.role === "user" && <EventBanner />}
+      {/* {user?.role === "user" && <EventBanner />} */}
       <Routes>
         {user?.role === "user" ? (
           <Route path="/" element={<EventsList />} />
