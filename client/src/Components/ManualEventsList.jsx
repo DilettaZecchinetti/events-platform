@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Button } from "react-bootstrap";
 import axios from "axios";
 import ManualEventCard from "./ManualEventCard.jsx";
 import { useUser } from "../context/UserContext.jsx";
@@ -15,12 +16,16 @@ const ManualEventList = () => {
     const [calendarAdded, setCalendarAdded] = useState({});
     const [calendarError, setCalendarError] = useState("");
 
+    const [showPastEvents, setShowPastEvents] = useState(false); // NEW
+
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await axios.get(`${API_BASE}/api/events/manual`, { withCredentials: true });
+                const res = await axios.get(`${API_BASE}/api/events/manual`, {
+                    withCredentials: true,
+                });
                 const manualEvents = res.data.filter((event) => event.source === "manual");
                 setEvents(manualEvents);
             } catch (err) {
@@ -39,7 +44,6 @@ const ManualEventList = () => {
             setSignupMessage({ eventId, text: "You need to log in to sign up for this event." });
             return;
         }
-
         setSignupLoading((prev) => ({ ...prev, [eventId]: true }));
         setSignupMessage("");
 
@@ -60,11 +64,12 @@ const ManualEventList = () => {
         }
     };
 
-    const isUserSignedUp = (event) => user && event.attendees?.includes(user._id);
-
     const handleAddToCalendar = async (eventData) => {
         if (!user) {
-            setCalendarError({ eventId: eventData._id, text: "You need to log in to add this event to your calendar." });
+            setCalendarError({
+                eventId: eventData._id,
+                text: "You need to log in to add this event to your calendar.",
+            });
             return;
         }
 
@@ -90,7 +95,9 @@ const ManualEventList = () => {
                 setCalendarMessage({ eventId, text: res.data.msg });
                 setCalendarAdded((prev) => ({ ...prev, [eventId]: true }));
             } else if (res.data.requiresAuth === true) {
-                const oauthRes = await axios.get(`${API_BASE}/api/calendar/oauth`, { withCredentials: true });
+                const oauthRes = await axios.get(`${API_BASE}/api/calendar/oauth`, {
+                    withCredentials: true,
+                });
                 const oauthUrl = oauthRes.data.url;
                 window.open(oauthUrl, "_blank", "width=500,height=600");
                 setCalendarMessage({ eventId, text: "Please complete the calendar connection in the new window." });
@@ -126,7 +133,6 @@ const ManualEventList = () => {
         </div>
     );
 
-
     return (
         <div className="manual-events container my-4">
             <section className="mb-5">
@@ -134,10 +140,32 @@ const ManualEventList = () => {
                 {upcomingEvents.length === 0 ? <p>No upcoming events available.</p> : renderEventList(upcomingEvents)}
             </section>
 
-            <section>
-                <h3 className="mb-3">Past Events</h3>
-                {pastEvents.length === 0 ? <p>No past events available.</p> : renderEventList(pastEvents)}
+            <section className="my-4">
+                <div className="text-center mt-5">
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setShowPastEvents((prev) => !prev)}
+                    >
+                        {showPastEvents ? "Hide Past Events" : "Show Past Events"}
+                    </Button>
+
+                </div>
+                {showPastEvents && (
+
+                    <h4 className="mb-4 text-center text-secondary pt-4">
+                        Past Events:
+                    </h4>
+                )}
+
+                {showPastEvents && (
+                    pastEvents.length === 0 ? (
+                        <p>No past events available.</p>
+                    ) : (
+                        renderEventList(pastEvents)
+                    )
+                )}
             </section>
+
         </div>
     );
 };
