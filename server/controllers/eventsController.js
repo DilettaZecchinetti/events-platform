@@ -2,6 +2,7 @@ import axios from "axios";
 import mongoose from "mongoose";
 import { fetchEventById, fetchEvents } from "../utils/ticketmaster.js";
 import { Event } from "../models/Event.js";
+import { v4 as uuidv4 } from "uuid";
 
 const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
 const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
@@ -97,6 +98,9 @@ export const getEventById = async (req, res) => {
 };
 
 export const createEvent = async (req, res) => {
+  console.log("req.body:", req.body);
+  console.log("req.file:", req.file);
+
   try {
     if (!req.user || !req.user._id) {
       return res
@@ -106,21 +110,23 @@ export const createEvent = async (req, res) => {
 
     const source = req.body.source || "manual";
 
-    // Require image for manual events
     if (source === "manual" && !req.file) {
       return res
         .status(400)
         .json({ message: "Image is required for manual events" });
     }
 
-    // Access text fields from req.body (FormData fields are strings)
-    const title = req.body.title;
-    const description = req.body.description;
-    const venue = req.body.venue;
-    const city = req.body.city;
-    const startDate = req.body.startDate;
-    const endDate = req.body.endDate;
-    const externalId = req.body.externalId;
+    const {
+      title,
+      description,
+      venue,
+      city,
+      startDate,
+      endDate,
+      externalId,
+      url,
+      image,
+    } = req.body;
 
     if (!title || !description || !venue || !city || !startDate || !endDate) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -138,17 +144,23 @@ export const createEvent = async (req, res) => {
       createdBy: req.user._id,
       source,
       externalId: finalExternalId,
-      image: req.file?.filename,
+      url: url || undefined,
+      // For manual events, use uploaded file; for Ticketmaster, use provided image URL; ignore empty strings
+      image:
+        source === "manual"
+          ? req.file?.filename
+          : image && image.trim() !== ""
+          ? image
+          : undefined,
     };
 
     const newEvent = await Event.create(newEventData);
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Create event error:", err);
-    res.status(400).json({
-      message: "Failed to save event",
-      error: err.message,
-    });
+    res
+      .status(400)
+      .json({ message: "Failed to save event", error: err.message });
   }
 };
 

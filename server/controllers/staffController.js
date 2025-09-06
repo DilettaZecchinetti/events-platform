@@ -38,11 +38,7 @@ export const createEvent = async (req, res) => {
         new Date(resolvedStartDate).getTime() + 2 * 60 * 60 * 1000
       ).toISOString();
 
-    const host =
-      process.env.VITE_API_BASE_URL || `${req.protocol}://${req.get("host")}`;
-    const imageUrl = req.file
-      ? `${host}/uploads/${req.file.filename}`
-      : undefined;
+    const imageUrl = req.file ? req.file.path : undefined;
 
     const newEventData = {
       startDate: resolvedStartDate,
@@ -56,7 +52,6 @@ export const createEvent = async (req, res) => {
     };
 
     const newEvent = await Event.create(newEventData);
-
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Create event error:", err);
@@ -75,10 +70,8 @@ export const updateEvent = async (req, res) => {
       location: { city, venue },
     };
 
-    const host =
-      process.env.VITE_API_BASE_URL || `${req.protocol}://${req.get("host")}`;
     if (req.file) {
-      updateData.image = `${host}/uploads/${req.file.filename}`;
+      updateData.image = req.file.path; // Cloudinary HTTPS URL
     }
 
     const event = await Event.findOneAndUpdate(
