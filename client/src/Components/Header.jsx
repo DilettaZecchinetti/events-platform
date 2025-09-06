@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo1 from "../assets/logo1.png";
 import { useUser } from "../context/UserContext";
 import "../../css/Header.css";
 
@@ -24,7 +24,7 @@ function Header() {
         >
             <div className="container d-flex justify-content-between align-items-center py-2" style={{ maxWidth: "1500px" }}>
                 <Link to="/" className="d-flex align-items-center text-decoration-none">
-                    <img src={logo} width={120} height={80} alt="Logo" />
+                    <img src={logo1} width={100} height={80} alt="Logo" />
                 </Link>
 
                 {/* Desktop Nav */}
