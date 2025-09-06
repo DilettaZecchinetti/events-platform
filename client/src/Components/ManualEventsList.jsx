@@ -181,7 +181,7 @@ const ManualEventList = () => {
                         color: "#1F2937",
                     }}
                 >
-                    At the Events Platform, we believe that exceptional experiences stem from intentional design and meticulous planning.<br />
+                    At the Events Scene, we believe that exceptional experiences stem from intentional design and meticulous planning.<br />
                     Our staff doesn't just organize events; we craft immersive journeys that resonate, inspire, and leave lasting impressions.
                 </p>
             </div>
