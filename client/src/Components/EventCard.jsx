@@ -4,18 +4,27 @@ import Card from "react-bootstrap/Card";
 import { Link } from "react-router-dom";
 import "../../css/EventCard.css";
 
+
 function EventCard({ event }) {
     const venue = event._embedded?.venues?.[0];
+
+    function getBestImage(images = []) {
+        if (!images.length) return ""; const sorted = [...images]
+            .filter(img => img.width >= 800)
+            .sort((a, b) => b.width - a.width);
+        return sorted[0].url;
+    }
 
     return (
         <Card bg="light" text="dark" className="mb-4 shadow-sm h-100">
             <div style={{ height: "200px", overflow: "hidden" }}>
                 <Card.Img
                     variant="top"
-                    src={event.images?.[1]?.url || event.images?.[0]?.url || ""}
+                    src={getBestImage(event.images)}
                     alt={`Image for ${event.name}`}
                     style={{ objectFit: "cover", width: "100%", height: "100%" }}
                 />
+
             </div>
             <Card.Body className="d-flex flex-column justify-content-between">
                 <div>

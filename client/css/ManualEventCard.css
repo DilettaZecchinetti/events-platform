@@ -32,8 +32,12 @@
     margin: 5px 0;
 }
 
-/* Keep buttons & attendees at the bottom */
 .event-card .event-actions,
 .event-card p.attendees {
     margin-top: auto;
+}
+
+.card-img-top {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { fetchEventsById, signupForEvent } from "../services/api.js";
 import { useUser } from "../context/UserContext.jsx";
+import "../../css/EventDetail.css";
 
 const EventDetail = () => {
     const { user } = useUser();
@@ -42,7 +43,7 @@ const EventDetail = () => {
 
     useEffect(() => {
         if (event && user) {
-            const signedUp = event.attendees?.some(a => a._id === user._id);
+            const signedUp = event.attendees?.some((a) => a._id === user._id);
             setIsSignedUp(signedUp);
         } else {
             setIsSignedUp(false);
@@ -62,7 +63,6 @@ const EventDetail = () => {
             }
 
             try {
-
                 const eventToSave = {
                     externalId: currentEvent.id,
                     title: currentEvent.name || currentEvent.title || "Untitled Event",
@@ -78,11 +78,9 @@ const EventDetail = () => {
                     source: "ticketmaster",
                 };
 
-                const saved = await axios.post(
-                    `${API_BASE}/api/events`,
-                    eventToSave,
-                    { withCredentials: true }
-                );
+                const saved = await axios.post(`${API_BASE}/api/events`, eventToSave, {
+                    withCredentials: true,
+                });
 
                 await axios.post(
                     `${API_BASE}/api/calendar/add-event`,
@@ -92,7 +90,10 @@ const EventDetail = () => {
 
                 setCalendarMessage("Event added to calendar!");
             } catch (err) {
-                console.error("Failed to add event to calendar:", err.response?.data || err.message);
+                console.error(
+                    "Failed to add event to calendar:",
+                    err.response?.data || err.message
+                );
                 setCalendarMessage("Failed to add event to calendar.");
             }
         };
@@ -108,13 +109,15 @@ const EventDetail = () => {
         setCalendarMessage("");
 
         try {
-            const { data: oauthUrl } = await axios.get(`${API_BASE}/api/calendar/oauth`, {
-                withCredentials: true,
-            });
+            const { data: oauthUrl } = await axios.get(
+                `${API_BASE}/api/calendar/oauth`,
+                { withCredentials: true }
+            );
 
             if (!oauthUrl?.url) throw new Error("OAuth URL missing.");
 
-            const width = 500, height = 600;
+            const width = 500,
+                height = 600;
             const left = window.screenX + (window.innerWidth - width) / 2;
             const top = window.screenY + (window.innerHeight - height) / 2;
 
@@ -155,41 +158,113 @@ const EventDetail = () => {
     if (error) return <p>Error: {error.message}</p>;
     if (!event) return <p>Event not found.</p>;
 
-    const imageUrl = event.images?.[0]?.url || event.image || null;
+    function getBestImage(images = []) {
+        if (!images.length) return "";
+        const sorted = [...images].sort((a, b) => b.width - a.width);
+        return sorted[0]?.url || "";
+    }
+
+
+    function buildLargeTMUrl(url, width = 1200, height = 675) {
+        if (!url) return "";
+        const sep = url.includes("?") ? "&" : "?";
+        return `${url}${sep}width=${width}&height=${height}&crop=fit`;
+    }
+
+    const raw = getBestImage(event.images);
+    const imageUrl = raw ? buildLargeTMUrl(raw) : event.image || null;
+
 
     return (
         <div className="container mt-5">
             <div className="card shadow-lg mx-auto" style={{ maxWidth: "700px" }}>
                 <div className="ratio ratio-16x9">
-                    {imageUrl && <img src={imageUrl} alt={event.name || event.title} className="object-fit-cover w-100 h-100" />}
+                    {imageUrl && (
+                        <img
+                            src={imageUrl}
+                            alt={event.name || event.title}
+                            className="object-fit-cover w-100 h-100"
+                            loading="lazy"
+                        />
+                    )}
                 </div>
+
+
                 <div className="card-body">
                     <h2 className="card-title">{event.name || event.title}</h2>
-                    {event.startDate && <p><strong>Date:</strong> {new Date(event.startDate).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" })}</p>}
-                    {event.venue && <p><strong>Venue:</strong> {event.venue}</p>}
-                    {event.city && <p><strong>City:</strong> {event.city}</p>}
-                    {event.url && <p><strong>More Info:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer">{event.url}</a></p>}
+                    {event.startDate && (
+                        <p>
+                            <strong>Date:</strong>{" "}
+                            {new Date(event.startDate).toLocaleString("en-GB", {
+                                dateStyle: "long",
+                                timeStyle: "short",
+                            })}
+                        </p>
+                    )}
+                    {event.venue && (
+                        <p>
+                            <strong>Venue:</strong> {event.venue}
+                        </p>
+                    )}
+                    {event.city && (
+                        <p>
+                            <strong>City:</strong> {event.city}
+                        </p>
+                    )}
+                    {event.url && (
+                        <p>
+                            <strong>More Info:</strong>{" "}
+                            <a
+                                href={event.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {event.url}
+                            </a>
+                        </p>
+                    )}
 
                     <div className="mt-4 d-flex flex-wrap gap-2">
                         {user ? (
                             <>
-                                <button className="btn btn-primary" onClick={handleSignUp} disabled={signupLoading || isSignedUp}>
-                                    {isSignedUp ? "Already Signed Up" : signupLoading ? "Signing up…" : "Sign Up"}
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleSignUp}
+                                    disabled={signupLoading || isSignedUp}
+                                >
+                                    {isSignedUp
+                                        ? "Already Signed Up"
+                                        : signupLoading
+                                            ? "Signing up…"
+                                            : "Sign Up"}
                                 </button>
-                                <button className="btn btn-success" onClick={handleAddToCalendar} disabled={calendarLoading}>
+                                <button
+                                    className="btn btn-success"
+                                    onClick={handleAddToCalendar}
+                                    disabled={calendarLoading}
+                                >
                                     {calendarLoading ? "Connecting…" : "Add to Calendar"}
                                 </button>
                             </>
                         ) : (
-                            <p className="text-danger">You must log in to sign up or add to calendar.</p>
+                            <p className="text-danger">
+                                You must log in to sign up or add to calendar.
+                            </p>
                         )}
                     </div>
 
                     {signupMessage && <p className="text-success mt-3">{signupMessage}</p>}
-                    {calendarMessage && <p className="text-primary mt-2">{calendarMessage}</p>}
+                    {calendarMessage && (
+                        <p className="text-primary mt-2">{calendarMessage}</p>
+                    )}
 
                     <div className="mt-4">
-                        <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>← Go Back</button>
+                        <button
+                            className="btn btn-outline-secondary"
+                            onClick={() => navigate(-1)}
+                        >
+                            ← Go Back
+                        </button>
                     </div>
                 </div>
             </div>
