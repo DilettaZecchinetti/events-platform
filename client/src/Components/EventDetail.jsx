@@ -69,8 +69,10 @@ const EventDetail = () => {
                     description: currentEvent.description || "",
                     startDate: new Date(currentEvent.startDate).toISOString(),
                     endDate: new Date(currentEvent.endDate).toISOString(),
-                    venue: currentEvent.venue || currentEvent.location?.venue || "",
-                    city: currentEvent.city || currentEvent.location?.city || "",
+                    location: {
+                        venue: currentEvent.venue || currentEvent.location?.venue || "",
+                        city: currentEvent.city || currentEvent.location?.city || "",
+                    },
                     image: currentEvent.images?.[0]?.url || currentEvent.image || "",
                     createdBy: user._id,
                     url: currentEvent.url || "",
