@@ -98,6 +98,8 @@ export const getEventById = async (req, res) => {
 };
 
 export const createEvent = async (req, res) => {
+  console.log(">>> Incoming request body:", req.body);
+
   try {
     if (!req.user || !req.user._id) {
       return res
@@ -116,25 +118,33 @@ export const createEvent = async (req, res) => {
     const {
       title,
       description,
-      venue,
-      city,
+      location,
       startDate,
       endDate,
       externalId,
       url,
       image,
     } = req.body;
+    const venue = location?.venue;
+    const city = location?.city;
 
-    if (!title || !description || !venue || !city || !startDate || !endDate) {
+    if (!title || !startDate || !endDate || !venue || !city) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const finalExternalId =
       externalId || (source === "manual" ? uuidv4() : undefined);
 
+    if (finalExternalId) {
+      const existing = await Event.findOne({ externalId: finalExternalId });
+      if (existing) {
+        return res.status(409).json({ message: "Event already exists" });
+      }
+    }
+
     const newEventData = {
       title,
-      description,
+      description: description || "",
       startDate,
       endDate,
       location: { venue, city },
@@ -142,7 +152,6 @@ export const createEvent = async (req, res) => {
       source,
       externalId: finalExternalId,
       url: url || undefined,
-      // For manual events, use uploaded file; for Ticketmaster, use provided image URL; ignore empty strings
       image:
         source === "manual"
           ? req.file?.filename
@@ -151,13 +160,28 @@ export const createEvent = async (req, res) => {
           : undefined,
     };
 
+    console.log(">>> newEventData being saved:", newEventData);
+
     const newEvent = await Event.create(newEventData);
+
+    console.log(">>> Event successfully created:", newEvent);
     res.status(201).json(newEvent);
   } catch (err) {
-    console.error("Create event error:", err);
-    res
-      .status(400)
-      .json({ message: "Failed to save event", error: err.message });
+    console.error(">>> Mongoose error object:", err);
+
+    if (err.errors) {
+      for (const key in err.errors) {
+        console.error(
+          `Field "${key}" failed validation:`,
+          err.errors[key].message
+        );
+      }
+    }
+
+    res.status(400).json({
+      message: err.message,
+      errors: err.errors,
+    });
   }
 };
 

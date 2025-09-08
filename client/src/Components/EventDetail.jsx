@@ -62,24 +62,24 @@ const EventDetail = () => {
                 return;
             }
 
-            try {
-                const eventToSave = {
-                    externalId: currentEvent.id,
-                    title: currentEvent.name || currentEvent.title || "Untitled Event",
-                    description: currentEvent.description || "",
-                    startDate: new Date(currentEvent.startDate).toISOString(),
-                    endDate: new Date(currentEvent.endDate).toISOString(),
-                    location: {
-                        venue: currentEvent.venue || currentEvent.location?.venue || "",
-                        city: currentEvent.city || currentEvent.location?.city || "",
-                    },
-                    image: currentEvent.images?.[0]?.url || currentEvent.image || "",
-                    createdBy: user._id,
-                    url: currentEvent.url || "",
-                    attendees: [],
-                    source: "ticketmaster",
-                };
+            const eventToSave = {
+                externalId: currentEvent.id,
+                title: currentEvent.name || currentEvent.title || "Untitled Event",
+                description: currentEvent.description || "",
+                startDate: new Date(currentEvent.startDate).toISOString(),
+                endDate: new Date(currentEvent.endDate).toISOString(),
+                location: {
+                    venue: currentEvent.venue || currentEvent.location?.venue || "",
+                    city: currentEvent.city || currentEvent.location?.city || "",
+                },
+                image: currentEvent.images?.[0]?.url || currentEvent.image || "",
+                createdBy: user._id,
+                url: currentEvent.url || "",
+                attendees: [],
+                source: "ticketmaster",
+            };
 
+            try {
                 const saved = await axios.post(`${API_BASE}/api/events`, eventToSave, {
                     withCredentials: true,
                 });
@@ -92,11 +92,32 @@ const EventDetail = () => {
 
                 setCalendarMessage("Event added to calendar!");
             } catch (err) {
-                console.error(
-                    "Failed to add event to calendar:",
-                    err.response?.data || err.message
-                );
-                setCalendarMessage("Failed to add event to calendar.");
+                console.error("Failed to add event to calendar:", err.response?.data || err.message);
+
+                if (err.response?.status === 409) {
+                    try {
+                        const existing = await axios.get(
+                            `${API_BASE}/api/events?externalId=${eventToSave.externalId}`,
+                            { withCredentials: true }
+                        );
+
+                        if (existing.data?._id) {
+                            await axios.post(
+                                `${API_BASE}/api/calendar/add-event`,
+                                { eventId: existing.data._id },
+                                { withCredentials: true }
+                            );
+                            setCalendarMessage("Event added to calendar!");
+                        } else {
+                            setCalendarMessage("Event already exists but could not be added to calendar.");
+                        }
+                    } catch (fetchErr) {
+                        console.error("Failed to fetch existing event:", fetchErr);
+                        setCalendarMessage("Failed to add existing event to calendar.");
+                    }
+                } else {
+                    setCalendarMessage("Failed to add event to calendar.");
+                }
             }
         };
 
