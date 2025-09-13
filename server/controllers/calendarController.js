@@ -95,21 +95,21 @@ export const addEventToCalendar = async (req, res) => {
 
     const userTokens = req.user.googleTokens;
     if (!userTokens) {
-      return res.status(401).json({
-        msg: "User has not authorized Google Calendar",
-      });
+      return res
+        .status(401)
+        .json({ msg: "User has not authorized Google Calendar" });
     }
 
     oauth2Client.setCredentials(userTokens);
 
     const event = await Event.findById(eventId);
     if (!event) {
-      console.warn(`Event with externalId ${eventId} not found`);
+      console.warn(`Event with id ${eventId} not found`);
       return res.status(404).json({ msg: "Event not found in database" });
     }
 
-    const startDate = new Date(event.startDate);
-    const endDate = event.endDate
+    let startDate = new Date(event.startDate);
+    let endDate = event.endDate
       ? new Date(event.endDate)
       : new Date(startDate.getTime() + 60 * 60 * 1000);
 
@@ -117,8 +117,17 @@ export const addEventToCalendar = async (req, res) => {
       return res.status(400).json({ msg: "Invalid event date(s)" });
     }
 
+    const now = new Date();
+    if (startDate < now) startDate = new Date(now.getTime() + 5 * 60 * 1000);
+    if (endDate <= startDate)
+      endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+
+    const locationStr = `${event.location?.venue || ""}${
+      event.location?.city ? ", " + event.location.city : ""
+    }`;
+
     const calendarEvent = {
-      summary: event.title,
+      summary: event.title || "Untitled Event",
       description: event.description || "",
       start: {
         dateTime: startDate.toISOString(),
@@ -128,7 +137,7 @@ export const addEventToCalendar = async (req, res) => {
         dateTime: endDate.toISOString(),
         timeZone: "Europe/London",
       },
-      location: event.location?.venue || "",
+      location: locationStr,
     };
 
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
@@ -142,10 +151,12 @@ export const addEventToCalendar = async (req, res) => {
       calendarEventId: response.data.id,
     });
   } catch (err) {
-    console.error("add event failed:", err);
-    if (err.response?.data) {
-      console.error("Server response error:", err.response.data);
+    console.error("Add event failed:", err);
+
+    if (err.response?.data?.error) {
+      console.error("Google API error:", err.response.data.error);
     }
+
     return res
       .status(500)
       .json({ msg: "Failed to add event to Google Calendar" });

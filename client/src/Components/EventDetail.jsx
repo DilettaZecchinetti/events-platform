@@ -62,12 +62,30 @@ const EventDetail = () => {
                 return;
             }
 
+            // const eventToSave = {
+            //     externalId: currentEvent.id,
+            //     title: currentEvent.name || currentEvent.title || "Untitled Event",
+            //     description: currentEvent.description || "",
+            //     startDate: new Date(currentEvent.startDate).toISOString(),
+            //     endDate: new Date(currentEvent.endDate).toISOString(),
+            //     location: {
+            //         venue: currentEvent.venue || currentEvent.location?.venue || "",
+            //         city: currentEvent.city || currentEvent.location?.city || "",
+            //     },
+            //     image: currentEvent.images?.[0]?.url || currentEvent.image || "",
+            //     createdBy: user._id,
+            //     url: currentEvent.url || "",
+            //     attendees: [],
+            //     source: "ticketmaster",
+            // };
             const eventToSave = {
                 externalId: currentEvent.id,
                 title: currentEvent.name || currentEvent.title || "Untitled Event",
                 description: currentEvent.description || "",
-                startDate: new Date(currentEvent.startDate).toISOString(),
-                endDate: new Date(currentEvent.endDate).toISOString(),
+                startDate: currentEvent.startDate ? new Date(currentEvent.startDate).toISOString() : null,
+                endDate: currentEvent.endDate
+                    ? new Date(currentEvent.endDate).toISOString()
+                    : new Date(new Date(currentEvent.startDate).getTime() + 2 * 60 * 60 * 1000).toISOString(),
                 location: {
                     venue: currentEvent.venue || currentEvent.location?.venue || "",
                     city: currentEvent.city || currentEvent.location?.city || "",
@@ -78,6 +96,8 @@ const EventDetail = () => {
                 attendees: [],
                 source: "ticketmaster",
             };
+
+
 
             try {
                 const saved = await axios.post(`${API_BASE}/api/events`, eventToSave, {
