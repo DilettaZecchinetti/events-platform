@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { upload } from "../config/cloudinary.js";
+import { upload } from "../utils/cloudinary.js";
 
 import {
   createEvent,

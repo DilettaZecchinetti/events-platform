@@ -98,8 +98,6 @@ export const getEventById = async (req, res) => {
 };
 
 export const createEvent = async (req, res) => {
-  console.log(">>> Incoming request body:", req.body);
-
   try {
     if (!req.user || !req.user._id) {
       return res
@@ -160,11 +158,8 @@ export const createEvent = async (req, res) => {
           : undefined,
     };
 
-    console.log(">>> newEventData being saved:", newEventData);
-
     const newEvent = await Event.create(newEventData);
 
-    console.log(">>> Event successfully created:", newEvent);
     res.status(201).json(newEvent);
   } catch (err) {
     console.error(">>> Mongoose error object:", err);

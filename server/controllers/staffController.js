@@ -4,20 +4,28 @@ import { v4 as uuidv4 } from "uuid";
 export const createEvent = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: user not found on request" });
+      return res.status(401).json({ message: "Unauthorized: user not found" });
     }
 
-    const {
-      startDate,
-      endDate,
-      externalId,
-      source = "manual",
-      city,
-      venue,
-      ...rest
-    } = req.body;
+    const source = req.body.source || "manual";
+
+    let locationObj;
+    try {
+      locationObj =
+        typeof req.body.location === "string"
+          ? JSON.parse(req.body.location)
+          : req.body.location;
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid location format" });
+    }
+
+    const { title, description, startDate, endDate, externalId, url } =
+      req.body;
+    const { venue, city } = locationObj || {};
+
+    if (!title || !startDate || !endDate || !venue || !city) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     if (source === "manual" && !req.file) {
       return res
@@ -27,37 +35,31 @@ export const createEvent = async (req, res) => {
 
     const finalExternalId =
       externalId || (source === "manual" ? uuidv4() : undefined);
-    if (!finalExternalId) {
-      return res.status(400).json({ message: "externalId is required" });
+
+    if (finalExternalId) {
+      const existing = await Event.findOne({ externalId: finalExternalId });
+      if (existing)
+        return res.status(409).json({ message: "Event already exists" });
     }
 
-    const resolvedStartDate = startDate || new Date().toISOString();
-    const resolvedEndDate =
-      endDate ||
-      new Date(
-        new Date(resolvedStartDate).getTime() + 2 * 60 * 60 * 1000
-      ).toISOString();
-
-    const imageUrl = req.file ? req.file.path : undefined;
-
-    const newEventData = {
-      startDate: resolvedStartDate,
-      endDate: resolvedEndDate,
+    const newEvent = await Event.create({
+      title,
+      description: description || "",
+      startDate,
+      endDate,
+      location: { venue, city },
       createdBy: req.user._id,
       source,
       externalId: finalExternalId,
-      location: { city, venue },
-      image: imageUrl,
-      ...rest,
-    };
+      url: url || undefined,
+      image: req.file?.path,
+    });
 
-    const newEvent = await Event.create(newEventData);
+    console.log("Event created:", newEvent);
     res.status(201).json(newEvent);
   } catch (err) {
-    console.error("Create event error:", err);
-    res
-      .status(400)
-      .json({ message: "Failed to save event", error: err.message });
+    console.error("Error creating event:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 };
 
@@ -71,7 +73,7 @@ export const updateEvent = async (req, res) => {
     };
 
     if (req.file) {
-      updateData.image = req.file.path; // Cloudinary HTTPS URL
+      updateData.image = req.file.path;
     }
 
     const event = await Event.findOneAndUpdate(

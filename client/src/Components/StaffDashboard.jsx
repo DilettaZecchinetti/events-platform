@@ -67,26 +67,29 @@ const StaffDashboard = () => {
 
     const handleCreate = async () => {
         setError(""); setMessage("");
-
         if (!formData.title.trim()) return setError("Title is required.");
         if (!formData.description.trim()) return setError("Description is required.");
-        if (!formData.location.venue || !formData.location.city) return setError("Venue and city required.");
+        if (!formData.location.venue || !formData.location.city) return setError("Venue and city are required.");
         if (!isDateRangeValid(formData.startDateTime, formData.endDateTime)) return setError("End must be after start.");
         if (!isStartDateInFuture(formData.startDateTime)) return setError("Start cannot be in the past.");
         if (!formData.image) return setError("Image is required.");
-        if (formData.description.length > 200) return setError("Description cannot exceed 200 chars.");
+        if (formData.description.length > 200) return setError("Description cannot exceed 200 characters.");
 
         setLoading(true);
+
         try {
             const data = new FormData();
             data.append("title", formData.title);
             data.append("description", formData.description);
             data.append("startDate", convertLocalDateTimeToISO(formData.startDateTime));
             data.append("endDate", convertLocalDateTimeToISO(formData.endDateTime));
-            data.append("venue", formData.location.venue);
-            data.append("city", formData.location.city);
             data.append("source", "manual");
             data.append("image", formData.image);
+
+            data.append("location", JSON.stringify({
+                venue: formData.location.venue,
+                city: formData.location.city
+            }));
 
             await createEvent(data, token);
 
@@ -95,13 +98,16 @@ const StaffDashboard = () => {
             setMessage("Event created successfully.");
             fetchEvents();
         } catch (err) {
-            console.error(err);
-            setError("Failed to create event.");
+            console.error("Create event error:", err);
+            if (err.response?.data?.message) {
+                setError(`Failed to create event: ${err.response.data.message}`);
+            } else {
+                setError("Failed to create event.");
+            }
         } finally {
             setLoading(false);
         }
     };
-
     const handleUpdate = async () => {
         setError(""); setMessage("");
 
@@ -134,6 +140,7 @@ const StaffDashboard = () => {
             setLoading(false);
         }
     };
+
 
     const handleDelete = async (id) => {
         setError(""); setMessage(""); setLoading(true);
