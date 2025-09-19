@@ -55,7 +55,6 @@ export const createEvent = async (req, res) => {
       image: req.file?.path,
     });
 
-    console.log("Event created:", newEvent);
     res.status(201).json(newEvent);
   } catch (err) {
     console.error("Error creating event:", err);
