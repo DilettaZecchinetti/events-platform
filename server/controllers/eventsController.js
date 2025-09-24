@@ -47,7 +47,6 @@ export const getEvents = async (req, res) => {
   try {
     const {
       keyword = "",
-      city = "",
       location = "",
       startDate = "",
       endDate = "",
@@ -59,13 +58,19 @@ export const getEvents = async (req, res) => {
       return res.status(500).json({ error: "Ticketmaster API key not set" });
     }
 
-    const locationToUse = location || city;
     const mappedLocation = mapLocation(location);
-    const startDateTime = formatDateForTicketmaster(startDate, true);
+
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const startDateTime = formatDateForTicketmaster(
+      startDate || today.toISOString().split("T")[0],
+      true
+    );
     const endDateTime = formatDateForTicketmaster(endDate, false);
 
     const { events, page: ticketmasterPage } = await fetchEvents({
-      keyword: keyword,
+      keyword,
       city: mappedLocation,
       page: Number(page),
       size: Number(size),
@@ -88,6 +93,7 @@ export const getBannerEvents = async (req, res) => {
       size: 10,
       sort: "date,asc",
       classificationName: "music",
+      startDateTime: new Date().toISOString(),
     };
 
     const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
