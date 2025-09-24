@@ -62,22 +62,6 @@ const EventDetail = () => {
                 return;
             }
 
-            // const eventToSave = {
-            //     externalId: currentEvent.id,
-            //     title: currentEvent.name || currentEvent.title || "Untitled Event",
-            //     description: currentEvent.description || "",
-            //     startDate: new Date(currentEvent.startDate).toISOString(),
-            //     endDate: new Date(currentEvent.endDate).toISOString(),
-            //     location: {
-            //         venue: currentEvent.venue || currentEvent.location?.venue || "",
-            //         city: currentEvent.city || currentEvent.location?.city || "",
-            //     },
-            //     image: currentEvent.images?.[0]?.url || currentEvent.image || "",
-            //     createdBy: user._id,
-            //     url: currentEvent.url || "",
-            //     attendees: [],
-            //     source: "ticketmaster",
-            // };
             const eventToSave = {
                 externalId: currentEvent.id,
                 title: currentEvent.name || currentEvent.title || "Untitled Event",

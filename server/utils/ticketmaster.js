@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import axios from "axios";
 
 const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
@@ -11,31 +8,48 @@ export const fetchEvents = async ({
   city = "",
   page = 0,
   size = 20,
+  startDateTime,
+  endDateTime,
 } = {}) => {
   try {
-    const startDateTime = new Date().toISOString().split(".")[0] + "Z";
-
     const params = {
       apikey: TICKETMASTER_API_KEY,
       countryCode: "GB",
-      startDateTime,
       page,
       size,
       sort: "date,asc",
-      classificationName: "music",
       ...(keyword && { keyword }),
       ...(city && { city }),
+      ...(startDateTime && { startDateTime }),
+      ...(endDateTime && { endDateTime }),
     };
+
+    console.log("Fetching Ticketmaster events with params:", params);
 
     const { data } = await axios.get(`${BASE_URL}/events.json`, { params });
 
-    return {
-      events: data._embedded?.events || [],
-      page: data.page || { totalPages: 1 },
-    };
+    let events = data._embedded?.events || [];
+    const totalPages = data.page?.totalPages || 1;
+
+    if (startDateTime || endDateTime) {
+      events = events.filter((event) => {
+        const eventDate = event.dates?.start?.dateTime;
+        if (!eventDate) return false;
+
+        const time = new Date(eventDate).getTime();
+        const start = startDateTime
+          ? new Date(startDateTime).getTime()
+          : -Infinity;
+        const end = endDateTime ? new Date(endDateTime).getTime() : Infinity;
+
+        return time >= start && time <= end;
+      });
+    }
+
+    return { events, page: { totalPages } };
   } catch (err) {
     console.error(
-      "Error from Ticketmaster:",
+      "Error fetching Ticketmaster events:",
       err.response?.data || err.message
     );
     throw err;

@@ -1,20 +1,40 @@
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const TICKETMASTER_API_KEY = import.meta.env.TICKETMASTER_API_KEY;
 
 export const fetchEvents = async ({
   keyword = "",
+  location = "",
   page = 0,
   size = 20,
+  startDate,
+  endDate,
+  classificationName,
 } = {}) => {
   try {
+    const params = {
+      countryCode: "GB",
+      page,
+      size,
+      sort: "date,asc",
+      ...(keyword && { keyword }),
+      ...(location && { location }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+      ...(classificationName && { classificationName }),
+    };
+
+    console.log("Fetching events from backend with params:", params);
+
     const response = await axios.get(`${API_BASE}/api/events`, {
-      params: { query: keyword, page, size },
+      params,
       withCredentials: true,
     });
+
     return response.data;
   } catch (err) {
-    console.error("Error fetching events:", err);
+    console.error("Error fetching events:", err.response?.data || err.message);
     throw err;
   }
 };

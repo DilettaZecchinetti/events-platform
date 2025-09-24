@@ -2,3 +2,26 @@
   padding: 0
 }
 
+.search-form {
+  margin: 2rem auto;
+  max-width: 1200px;
+}
+
+.search-form .form-control {
+  border: 1px solid #ddd;
+  transition: all 0.2s ease-in-out;
+}
+
+.search-form .form-control:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 6px rgba(0, 102, 204, 0.4);
+}
+
+.search-form button {
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.search-form button:hover {
+  background-color: #004999;
+  transform: translateY(-1px);
+}

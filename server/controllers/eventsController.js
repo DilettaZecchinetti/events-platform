@@ -7,16 +7,75 @@ import { v4 as uuidv4 } from "uuid";
 const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY;
 const BASE_URL = "https://app.ticketmaster.com/discovery/v2";
 
+const mapLocation = (region) => {
+  switch (region) {
+    case "London":
+      return "London";
+    case "South":
+      return "Brighton,Bristol,Southampton,Reading";
+    case "Midlands & Central":
+      return "Birmingham,Nottingham,Derby,Leicester";
+    case "Wales & North West":
+      return "Cardiff,Manchester,Liverpool,Chester";
+    case "North & North East":
+      return "Leeds,Sheffield,Newcastle,Manchester";
+    case "Scotland":
+      return "Glasgow,Edinburgh,Aberdeen,Inverness";
+    case "Ireland":
+      return "Dublin,Cork,Limerick,Galway";
+    case "Northern Ireland":
+      return "Belfast,Derry,Londonderry";
+    default:
+      return "";
+  }
+};
+
+const formatDateForTicketmaster = (date, isStart = true) => {
+  if (!date) return undefined;
+
+  const [year, month, day] = date.split("-").map(Number);
+  if (!year || !month || !day) return undefined;
+
+  const d = new Date(Date.UTC(year, month - 1, day));
+  if (isStart) d.setUTCHours(0, 0, 0, 0);
+  else d.setUTCHours(23, 59, 59, 0);
+
+  return d.toISOString().replace(/\.\d{3}Z$/, "Z");
+};
+
 export const getEvents = async (req, res) => {
   try {
-    const query = req.query.query || "";
-    const page = parseInt(req.query.page) || 0;
-    const size = parseInt(req.query.size) || 20;
+    const {
+      keyword = "",
+      city = "",
+      location = "",
+      startDate = "",
+      endDate = "",
+      page = 0,
+      size = 20,
+    } = req.query;
 
-    const events = await fetchEvents({ keyword: query, page, size });
-    res.status(200).json(events);
+    if (!TICKETMASTER_API_KEY) {
+      return res.status(500).json({ error: "Ticketmaster API key not set" });
+    }
+
+    const locationToUse = location || city;
+    const mappedLocation = mapLocation(location);
+    const startDateTime = formatDateForTicketmaster(startDate, true);
+    const endDateTime = formatDateForTicketmaster(endDate, false);
+
+    const { events, page: ticketmasterPage } = await fetchEvents({
+      keyword: keyword,
+      city: mappedLocation,
+      page: Number(page),
+      size: Number(size),
+      startDateTime,
+      endDateTime,
+    });
+
+    res.status(200).json({ events, page: ticketmasterPage });
   } catch (err) {
-    console.error("Error in getEvents:", err);
+    console.error("Error in getEvents:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };

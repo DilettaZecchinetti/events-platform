@@ -8,5 +8,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "multer": "^2.0.2",
+    "react-date-range": "^2.0.1",
+    "react-datepicker": "^8.7.0"
+  }
 }
