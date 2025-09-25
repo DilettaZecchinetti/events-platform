@@ -48,8 +48,8 @@ export const getEvents = async (req, res) => {
     const {
       keyword = "",
       location = "",
-      startDate = "",
-      endDate = "",
+      startDate,
+      endDate,
       page = 0,
       size = 20,
     } = req.query;
@@ -60,14 +60,14 @@ export const getEvents = async (req, res) => {
 
     const mappedLocation = mapLocation(location);
 
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+    const now = new Date();
+    const startDateTime = startDate
+      ? new Date(startDate).toISOString().split(".")[0] + "Z"
+      : now.toISOString().split(".")[0] + "Z";
 
-    const startDateTime = formatDateForTicketmaster(
-      startDate || today.toISOString().split("T")[0],
-      true
-    );
-    const endDateTime = formatDateForTicketmaster(endDate, false);
+    const endDateTime = endDate
+      ? new Date(endDate).toISOString().split(".")[0] + "Z"
+      : undefined;
 
     const { events, page: ticketmasterPage } = await fetchEvents({
       keyword,
