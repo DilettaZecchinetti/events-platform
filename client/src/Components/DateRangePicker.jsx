@@ -13,6 +13,7 @@ const DateRangePicker = ({ startDate, endDate, setStartDate, setEndDate }) => {
 
     return (
         <div className="d-flex gap-2">
+
             <DatePicker
                 selectsRange
                 startDate={start}
@@ -26,6 +27,7 @@ const DateRangePicker = ({ startDate, endDate, setStartDate, setEndDate }) => {
                 dateFormat="dd-MM-yyyy"
                 placeholderText="Select date"
                 monthsShown={2}
+                calendarClassName="custom-datepicker"
                 className="form-control rounded-4 shadow-sm border-0 py-2 px-3"
             />
         </div>

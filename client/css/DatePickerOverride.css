@@ -1,12 +1,8 @@
 .react-datepicker {
   display: flex !important;
   gap: 1.5rem;
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   font-family: "Inter", sans-serif;
-  background: #fff;
+  padding: 1rem;
 }
 
 .react-datepicker__header {
@@ -72,3 +68,47 @@
   color: #fff !important;
 }
 
+
+.react-datepicker__month-container-wrapper {
+  background: #fff; 
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 1.5rem; 
+  padding: 1rem;
+}
+
+.react-datepicker__month-container {
+  background: transparent;
+  padding: 0;
+}
+
+.react-datepicker-popper {
+  width: auto !important;
+}
+
+.datepicker-wrapper .react-datepicker {
+  display: flex;
+  gap: 1.5rem;
+  background: #fff; 
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  min-width: 500px; 
+}
+
+
+.custom-datepicker {
+  display: flex;           
+  gap: 1.5rem;             
+  background: #fff;      
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  min-width: 550px;       
+}
+
+.custom-datepicker .react-datepicker__month-container {
+  background: transparent;
+  padding: 0;
+}

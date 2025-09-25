@@ -16,6 +16,16 @@ const EventList = () => {
     const [location, setLocation] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [debouncedKeyword, setDebouncedKeyword] = useState(keyword);
+
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedKeyword(keyword);
+            setPage(0);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [keyword]);
 
     const loadEvents = async (pageNumber = 0) => {
         setLoading(true);
@@ -42,7 +52,7 @@ const EventList = () => {
 
     useEffect(() => {
         loadEvents(page);
-    }, [page, keyword, location, startDate, endDate]);
+    }, [page, debouncedKeyword, location, startDate, endDate]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -147,15 +157,16 @@ const EventList = () => {
                     ></div>
                 </div>
             </div>
-
             <form
                 onSubmit={handleSearch}
-                className="p-4 bg-white shadow-lg rounded-5 mb-4"
+                className="p-4 rounded-5 mb-4 form-transparent"
                 style={{ maxWidth: "1200px", margin: "0 auto" }}
             >
-                <div className="row g-3 align-items-center">
 
-                    <div className="col-md-3">
+                <div className="row g-3 g-lg-0 align-items-center">
+
+                    {/* Location select */}
+                    <div className="col-12 col-sm-6 col-md-3 mb-3 mb-md-0">
                         <select
                             className="form-select rounded-4 shadow-sm border-0 py-2 px-3"
                             value={location}
@@ -173,8 +184,10 @@ const EventList = () => {
                         </select>
                     </div>
 
-                    <div className="col-md-4 position-relative">
+                    {/* Date picker */}
+                    <div className="col-12 col-sm-6 col-md-3 mb-3 mb-md-0 position-relative datepicker-flush">
                         <DateRangePicker
+                            className="datepicker-input"
                             startDate={startDate}
                             endDate={endDate}
                             setStartDate={setStartDate}
@@ -182,28 +195,32 @@ const EventList = () => {
                         />
                     </div>
 
-                    <div className="col-md-4">
+                    {/* Keyword input */}
+                    <div className="col-12 col-sm-8 col-md-5 mb-3 mb-md-0">
                         <input
                             type="text"
                             className="form-control rounded-4 shadow-sm border-0 py-2 px-3"
-                            placeholder="Artist, Genre, Event..."
+                            placeholder=" Artist, Event or Venue"
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
-                            style={{ fontSize: "0.95rem" }}
+                            style={{ fontSize: "1 rem" }}
                         />
                     </div>
 
-                    <div className="col-md-1 d-grid">
+                    {/* Search button */}
+                    <div className="col-12 col-sm-4 col-md-1 d-grid">
                         <button
                             type="submit"
                             className="btn btn-primary rounded-4 shadow-sm"
-                            style={{ padding: "0.6rem 0", fontSize: "1.1rem" }}
+                            style={{ padding: "0.5rem 0", fontSize: "1rem" }}
                         >
                             <i className="bi bi-search"></i>
                         </button>
                     </div>
+
                 </div>
             </form>
+
 
             {(location || startDate || endDate || keyword) && (
                 <div className="mb-3 d-flex flex-wrap gap-2">
