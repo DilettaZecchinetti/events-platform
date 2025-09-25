@@ -42,8 +42,10 @@ const Register = () => {
     return (
         <div className="container d-flex justify-content-center pt-5">
             {loading ? (
-                <div className="text-center" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
-                    Loading...
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
             ) : (
                 <div>

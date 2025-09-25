@@ -231,7 +231,11 @@ const EventList = () => {
                 </div>
             )}
 
-            {loading && <p>Loading events...</p>}
+            {loading && <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>}
             {error && <p className="text-danger">{error}</p>}
             {!loading && !error && events.length === 0 && <p>No events found.</p>}
 

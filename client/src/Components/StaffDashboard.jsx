@@ -234,7 +234,11 @@ const StaffDashboard = () => {
                 {!showForm && (
                     <button className="btn-new" onClick={() => { resetForm(); setShowForm(true); setError(""); setMessage(""); }}>+ Create new event</button>
                 )}
-                {loading && !showForm ? <p>Loading events...</p> :
+                {loading && !showForm ? <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div> :
                     events.length === 0 ? <p>No events created yet.</p> :
                         <ul className="event-list my-event-list">
                             {events.map(event => {
